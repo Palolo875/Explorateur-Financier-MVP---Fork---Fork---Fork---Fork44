@@ -1,4 +1,4 @@
-import { FinancialData, EmotionalContext, FinancialInsight, SimulationParams, SimulationResult } from '../types/finance';
+import { FinancialData, EmotionalContext, FinancialInsight, Simulation, GoalSimulation } from '../types/finance';
 import dayjs from 'dayjs';
 // Generate personalized financial insights based on user data
 export function calculateFinancialInsights(financialData: FinancialData, emotionalContext: EmotionalContext, totalIncome: number, totalExpenses: number): FinancialInsight[] {
@@ -119,60 +119,70 @@ export function calculateFinancialInsights(financialData: FinancialData, emotion
   return insights;
 }
 // Run financial simulation based on user data and parameters
-export function runFinancialSimulation(financialData: FinancialData, params: SimulationParams): SimulationResult {
-  const years = Array.from({
-    length: params.years
-  }, (_, i) => i + 1);
-  const income = financialData.incomes.reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0) * 12; // Annual income
-  const expenses = financialData.expenses.reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0) * 12; // Annual expenses
+export function runSimulation(financialData: FinancialData, params: Simulation): GoalSimulation {
+  const monthlyIncome = financialData.incomes.reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0);
+  const monthlyExpenses = financialData.expenses.reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0);
   const initialSavings = (financialData.savings || []).reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0);
   const initialInvestments = (financialData.investments || []).reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0);
   const initialDebts = (financialData.debts || []).reduce((sum, item) => sum + (typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value), 0);
-  let currentIncome = income;
-  let currentExpenses = expenses;
+
   let currentSavings = initialSavings;
   let currentInvestments = initialInvestments;
   let currentDebts = initialDebts;
-  const result: SimulationResult = {
+
+  const monthlyIncomeGrowth = Math.pow(1 + params.incomeGrowth / 100, 1 / 12) - 1;
+  const monthlyInflationRate = Math.pow(1 + params.inflationRate / 100, 1 / 12) - 1;
+  const monthlyExpenseReduction = Math.pow(1 + params.expenseReduction / 100, 1 / 12) - 1;
+  const monthlyInvestmentReturn = Math.pow(1 + params.investmentReturn / 100, 1 / 12) - 1;
+
+  let currentMonthlyIncome = monthlyIncome;
+  let currentMonthlyExpenses = monthlyExpenses;
+
+  const result: GoalSimulation = {
     years: [],
     netWorth: [],
     savings: [],
     income: [],
-    expenses: []
+    expenses: [],
+    params: params,
   };
+
   for (let year = 1; year <= params.years; year++) {
-    // Apply growth rates
-    currentIncome *= 1 + params.incomeGrowth / 100;
-    currentExpenses *= 1 + (params.inflationRate - params.expenseReduction) / 100;
-    // Calculate yearly savings
-    const yearlySavings = currentIncome - currentExpenses;
-    // Update savings and investments
-    if (yearlySavings > 0) {
-      // Allocate savings between cash and investments
-      const toInvestments = yearlySavings * (params.savingsRate / 100);
-      const toCash = yearlySavings - toInvestments;
-      currentSavings += toCash;
-      currentInvestments += toInvestments;
-      // Apply investment returns
-      currentInvestments *= 1 + params.investmentReturn / 100;
-    } else {
-      // Draw from savings if expenses exceed income
-      currentSavings += yearlySavings;
-      // If savings are depleted, add to debt
-      if (currentSavings < 0) {
-        currentDebts -= currentSavings; // Add the negative savings to debt
-        currentSavings = 0;
+    let yearEndIncome = 0;
+    let yearEndExpenses = 0;
+
+    for (let month = 1; month <= 12; month++) {
+      currentMonthlyIncome *= (1 + monthlyIncomeGrowth);
+      currentMonthlyExpenses *= (1 + monthlyInflationRate - monthlyExpenseReduction);
+
+      yearEndIncome += currentMonthlyIncome;
+      yearEndExpenses += currentMonthlyExpenses;
+
+      const monthlyNet = currentMonthlyIncome - currentMonthlyExpenses;
+
+      if (monthlyNet > 0) {
+        const toInvest = monthlyNet * (params.savingsRate / 100);
+        const toSave = monthlyNet - toInvest;
+        currentSavings += toSave;
+        currentInvestments += toInvest;
+      } else {
+        currentSavings += monthlyNet;
+        if (currentSavings < 0) {
+          currentDebts -= currentSavings;
+          currentSavings = 0;
+        }
       }
+      currentInvestments *= (1 + monthlyInvestmentReturn);
     }
-    // Calculate net worth
+
     const netWorth = currentSavings + currentInvestments - currentDebts;
-    // Add to results
     result.years.push(year);
     result.netWorth.push(Math.round(netWorth));
     result.savings.push(Math.round(currentSavings));
-    result.income.push(Math.round(currentIncome));
-    result.expenses.push(Math.round(currentExpenses));
+    result.income.push(Math.round(yearEndIncome));
+    result.expenses.push(Math.round(yearEndExpenses));
   }
+
   return result;
 }
 // Format currency amount

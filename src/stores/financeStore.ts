@@ -10,12 +10,25 @@ const defaultFinancialData: FinancialData = {
   debts: [],
   investments: []
 };
+
 interface FinanceStore {
   financialData: FinancialData;
   setFinancialData: (data: FinancialData) => void;
   hasCompletedOnboarding: boolean;
   setHasCompletedOnboarding: (value: boolean) => void;
+  questionHistory: string[];
+  addQuestionToHistory: (question: string) => void;
+  clearQuestionHistory: () => void;
+  financialSnapshots: {
+    date: string;
+    data: FinancialData;
+  }[];
+  saveFinancialSnapshot: (data?: FinancialData) => void;
+  clearFinancialSnapshots: () => void;
+  selectedTheme: string;
+  setSelectedTheme: (theme: string) => void;
 }
+
 export const useFinanceStore = create<FinanceStore>()(persist(set => ({
   financialData: defaultFinancialData,
   setFinancialData: data => set({
@@ -24,6 +37,42 @@ export const useFinanceStore = create<FinanceStore>()(persist(set => ({
   hasCompletedOnboarding: false,
   setHasCompletedOnboarding: value => set({
     hasCompletedOnboarding: value
+  }),
+  questionHistory: [],
+  addQuestionToHistory: question => set(state => {
+    // Add question to history if it doesn't already exist
+    if (!state.questionHistory.includes(question)) {
+      return {
+        questionHistory: [question, ...state.questionHistory].slice(0, 10) // Keep only the last 10 questions
+      };
+    }
+    return state;
+  }),
+  clearQuestionHistory: () => set({
+    questionHistory: []
+  }),
+  financialSnapshots: [],
+  saveFinancialSnapshot: data => set(state => {
+    const snapshot = {
+      date: new Date().toISOString(),
+      data: data || {
+        incomes: [],
+        expenses: [],
+        savings: [],
+        investments: [],
+        debts: []
+      }
+    };
+    return {
+      financialSnapshots: [snapshot, ...state.financialSnapshots].slice(0, 12) // Keep only the last 12 snapshots
+    };
+  }),
+  clearFinancialSnapshots: () => set({
+    financialSnapshots: []
+  }),
+  selectedTheme: 'neon',
+  setSelectedTheme: theme => set({
+    selectedTheme: theme
   })
 }), {
   name: 'finance-store'

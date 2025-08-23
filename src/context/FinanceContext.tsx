@@ -1,6 +1,33 @@
 import React, { useState, createContext, useContext } from 'react';
 import { useFinanceStore } from '../stores/financeStore';
-import { FinancialData, FinancialInsight, EmotionalContext } from '../types/finance';
+import { FinancialData, FinancialInsight, EmotionalContext, Simulation, GoalSimulation } from '../types/finance';
+import { runSimulation as runSimulationUtil } from '../utils/financialCalculations';
+
+interface FinanceContextType {
+  userQuestion: string;
+  setUserQuestion: (question: string) => void;
+  financialData: FinancialData;
+  setFinancialData: (data: FinancialData | ((prev: FinancialData) => FinancialData)) => void;
+  emotionalContext: EmotionalContext;
+  setEmotionalContext: (context: EmotionalContext) => void;
+  generateInsights: () => Promise<FinancialInsight[]>;
+  runSimulation: (params: Simulation) => Promise<GoalSimulation>;
+  getFinancialHealth: () => Promise<{
+    score: number;
+    recommendations: string[];
+    strengths: string[];
+    weaknesses: string[];
+  }>;
+  detectHiddenFees: () => Promise<any[]>;
+  getHistoricalData: () => Promise<any[]>;
+  getPredictions: () => Promise<any>;
+  getFinancialScore: () => number;
+  calculateTotalIncome: () => number;
+  calculateTotalExpenses: () => number;
+  calculateNetWorth: () => number;
+  refreshData: () => Promise<void>;
+}
+
 // Default values for financial data
 const defaultFinancialData: FinancialData = {
   incomes: [],
@@ -15,7 +42,7 @@ const defaultEmotionalContext: EmotionalContext = {
   tags: ['Neutre']
 };
 // Create the context with default values
-const FinanceContext = createContext<any>({
+const FinanceContext = createContext<FinanceContextType>({
   userQuestion: '',
   setUserQuestion: () => {},
   financialData: defaultFinancialData,
@@ -252,43 +279,10 @@ export function FinanceProvider({
       weaknesses
     };
   };
-  const runSimulation = async (params: any) => {
-    const {
-      years,
-      incomeGrowth,
-      expenseReduction,
-      investmentReturn,
-      inflationRate
-    } = params;
-    const initialIncome = calculateTotalIncome() * 12; // Annual income
-    const initialExpenses = calculateTotalExpenses() * 12; // Annual expenses
-    let currentNetWorth = calculateNetWorth();
-    const result = {
-      years: [] as number[],
-      income: [] as number[],
-      expenses: [] as number[],
-      savings: [] as number[],
-      netWorth: [] as number[]
-    };
-    let currentIncome = initialIncome;
-    let currentExpenses = initialExpenses;
-    for (let i = 0; i < years; i++) {
-      const year = new Date().getFullYear() + i;
-      result.years.push(year);
-      // Apply growth/reduction for subsequent years
-      if (i > 0) {
-        currentIncome *= 1 + incomeGrowth / 100;
-        currentExpenses *= 1 + inflationRate / 100 - expenseReduction / 100;
-      }
-      const annualSavings = currentIncome - currentExpenses;
-      currentNetWorth += annualSavings;
-      currentNetWorth *= 1 + investmentReturn / 100;
-      result.income.push(currentIncome);
-      result.expenses.push(currentExpenses);
-      result.savings.push(annualSavings);
-      result.netWorth.push(currentNetWorth);
-    }
-    return result;
+  const runSimulation = async (params: Simulation): Promise<GoalSimulation> => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return runSimulationUtil(safeFinancialData, params);
   };
   // Mock functions for other finance operations
   const detectHiddenFees = async () => [];
