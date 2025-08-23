@@ -5,25 +5,10 @@ import { useFinance } from '../context/FinanceContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { SaveIcon, RefreshCwIcon, AlertCircleIcon, DownloadIcon, TrendingUpIcon, TrendingDownIcon, CreditCardIcon, InfoIcon, CheckIcon, XIcon, HomeIcon, BriefcaseIcon, CalendarIcon } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
-interface SimulationParams {
-  name: string;
-  years: number;
-  incomeGrowth: number;
-  expenseReduction: number;
-  savingsRate: number;
-  investmentReturn: number;
-  inflationRate: number;
-  simulationType: 'normal' | 'optimistic' | 'pessimistic' | 'crisis';
-}
-interface SimulationResult {
-  name?: string;
-  years: number[];
-  income: number[];
-  expenses: number[];
-  savings: number[];
-  netWorth: number[];
-  params: SimulationParams;
-}
+import { useMemo } from 'react';
+import { Simulation, GoalSimulation } from '../types/finance';
+import { SimulationChart } from './ui/SimulationChart';
+
 export function FinancialSimulator() {
   const {
     theme,
@@ -36,7 +21,7 @@ export function FinancialSimulator() {
     calculateTotalExpenses
   } = useFinance();
   // State for simulation parameters
-  const [params, setParams] = useState<SimulationParams>({
+  const [params, setParams] = useState<Simulation>({
     name: 'Ma simulation',
     years: 10,
     incomeGrowth: 2,
@@ -47,9 +32,9 @@ export function FinancialSimulator() {
     simulationType: 'normal'
   });
   // State for simulation results
-  const [results, setResults] = useState<SimulationResult | null>(null);
-  const [simulationParams, setSimulationParams] = useState<SimulationParams>(params);
-  const [savedSimulations, setSavedSimulations] = useState<SimulationResult[]>([]);
+  const [results, setResults] = useState<GoalSimulation | null>(null);
+  const [simulationParams, setSimulationParams] = useState<Simulation>(params);
+  const [savedSimulations, setSavedSimulations] = useState<GoalSimulation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
@@ -64,7 +49,7 @@ export function FinancialSimulator() {
       simulationType: 'crisis',
       name: "Perte d'emploi"
     },
-    crisisFunction: (result: SimulationResult) => {
+    crisisFunction: (result: GoalSimulation) => {
       const newResult = JSON.parse(JSON.stringify(result));
       const yearIndex = 2;
       if (yearIndex < newResult.income.length) {
@@ -84,7 +69,7 @@ export function FinancialSimulator() {
       simulationType: 'crisis',
       name: 'Urgence médicale'
     },
-    crisisFunction: (result: SimulationResult) => {
+    crisisFunction: (result: GoalSimulation) => {
       const newResult = JSON.parse(JSON.stringify(result));
       const yearIndex = 1;
       if (yearIndex < newResult.expenses.length) {
@@ -116,7 +101,7 @@ export function FinancialSimulator() {
       simulationType: 'pessimistic',
       name: 'Hausse des taux'
     },
-    crisisFunction: (result: SimulationResult) => {
+    crisisFunction: (result: GoalSimulation) => {
       const newResult = JSON.parse(JSON.stringify(result));
       for (let i = 1; i < newResult.expenses.length; i++) {
         const debtImpact = calculateTotalExpenses() * 0.15;
@@ -136,7 +121,7 @@ export function FinancialSimulator() {
       simulationType: 'normal',
       name: 'Achat immobilier'
     },
-    crisisFunction: (result: SimulationResult) => {
+    crisisFunction: (result: GoalSimulation) => {
       const newResult = JSON.parse(JSON.stringify(result));
       const yearIndex = 2;
       if (yearIndex < newResult.expenses.length) {
@@ -270,7 +255,27 @@ export function FinancialSimulator() {
       toast.error("Erreur lors de l'exportation des résultats");
     }
   };
-  window.handleExportResults = handleExportResults;
+  if (typeof window !== 'undefined') {
+    (window as any).handleExportResults = handleExportResults;
+  }
+
+  const netWorthData = useMemo(() => {
+    if (!results || !results.years || results.years.length === 0) return [];
+    return results.years.map((year, i) => ({
+      year,
+      netWorth: results.netWorth[i],
+    }));
+  }, [results]);
+
+  const incomeVsExpensesData = useMemo(() => {
+    if (!results || !results.years || results.years.length === 0) return [];
+    return results.years.map((year, i) => ({
+      year,
+      income: results.income[i],
+      expenses: results.expenses[i],
+    }));
+  }, [results]);
+
   return <div className="w-full max-w-6xl mx-auto pb-20">
       <Toaster position="top-right" />
       {/* Header */}
@@ -321,7 +326,7 @@ export function FinancialSimulator() {
                 <input type="range" min="1" max="30" value={params.years} onChange={e => setParams({
                 ...params,
                 years: parseInt(e.target.value)
-              })} className="w-full" />
+              })} className="w-full" aria-label="Années de projection" />
               </div>
               {/* Income growth */}
               <div>
@@ -334,7 +339,7 @@ export function FinancialSimulator() {
                 <input type="range" min="0" max="10" step="0.5" value={params.incomeGrowth} onChange={e => setParams({
                 ...params,
                 incomeGrowth: parseFloat(e.target.value)
-              })} className="w-full" />
+              })} className="w-full" aria-label="Croissance des revenus" />
               </div>
               {/* Expense reduction */}
               <div>
@@ -349,7 +354,7 @@ export function FinancialSimulator() {
                 <input type="range" min="0" max="5" step="0.5" value={params.expenseReduction} onChange={e => setParams({
                 ...params,
                 expenseReduction: parseFloat(e.target.value)
-              })} className="w-full" />
+              })} className="w-full" aria-label="Réduction des dépenses" />
               </div>
               {/* Advanced options toggle */}
               <button onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center">
@@ -367,7 +372,7 @@ export function FinancialSimulator() {
                     <input type="range" min="0" max="100" value={params.savingsRate} onChange={e => setParams({
                   ...params,
                   savingsRate: parseInt(e.target.value)
-                })} className="w-full" />
+                })} className="w-full" aria-label="Taux d'épargne" />
                   </div>
                   {/* Investment return */}
                   <div>
@@ -382,7 +387,7 @@ export function FinancialSimulator() {
                     <input type="range" min="0" max="15" step="0.5" value={params.investmentReturn} onChange={e => setParams({
                   ...params,
                   investmentReturn: parseFloat(e.target.value)
-                })} className="w-full" />
+                })} className="w-full" aria-label="Rendement des investissements" />
                   </div>
                   {/* Inflation rate */}
                   <div>
@@ -395,7 +400,7 @@ export function FinancialSimulator() {
                     <input type="range" min="0" max="10" step="0.5" value={params.inflationRate} onChange={e => setParams({
                   ...params,
                   inflationRate: parseFloat(e.target.value)
-                })} className="w-full" />
+                })} className="w-full" aria-label="Taux d'inflation" />
                   </div>
                 </div>}
               {/* Action buttons */}
@@ -410,7 +415,7 @@ export function FinancialSimulator() {
                   <SaveIcon className="h-4 w-4 mr-2" />
                   Enregistrer
                 </button>
-                <button onClick={resetParams} className="bg-black/30 hover:bg-black/40 p-2 rounded-lg" title="Réinitialiser">
+                <button onClick={resetParams} disabled={isLoading} className="bg-black/30 hover:bg-black/40 p-2 rounded-lg disabled:opacity-50" title="Réinitialiser" aria-label="Réinitialiser les paramètres">
                   <XIcon className="h-4 w-4" />
                 </button>
               </div>
@@ -423,7 +428,7 @@ export function FinancialSimulator() {
               Scénarios prédéfinis
             </h2>
             <div className="space-y-3">
-              {scenarios.map(scenario => <button key={scenario.id} onClick={() => applyScenario(scenario.id)} className={`w-full p-3 rounded-lg flex items-start text-left ${activeScenario === scenario.id ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-black/20 hover:bg-black/30'}`}>
+              {scenarios.map(scenario => <button key={scenario.id} onClick={() => applyScenario(scenario.id)} disabled={isLoading} className={`w-full p-3 rounded-lg flex items-start text-left ${activeScenario === scenario.id ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-black/20 hover:bg-black/30'} disabled:opacity-50`} aria-label={`Appliquer le scénario ${scenario.name}`}>
                   <div className={`p-2 rounded-full bg-black/30 mr-3 ${activeScenario === scenario.id ? 'text-indigo-400' : 'text-gray-400'}`}>
                     {scenario.icon}
                   </div>
@@ -451,71 +456,32 @@ export function FinancialSimulator() {
             </div>
             {isLoading ? <div className="h-80 flex items-center justify-center">
                 <div className="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-              </div> : results ? <div className="space-y-8">
+              </div> : results && results.years && results.years.length > 0 ? <div className="space-y-8">
                 {/* Net worth chart */}
                 <div>
                   <h3 className="text-md font-medium mb-2">
                     Évolution de la valeur nette
                   </h3>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={results.years.map((year, i) => ({
-                    year,
-                    netWorth: results.netWorth[i]
-                  }))} margin={{
-                    top: 10,
-                    right: 30,
-                    left: 0,
-                    bottom: 0
-                  }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis dataKey="year" stroke="#aaa" />
-                        <YAxis stroke="#aaa" />
-                        <Tooltip formatter={value => [`${value.toLocaleString('fr-FR')}€`, 'Valeur nette']} contentStyle={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px'
-                    }} />
-                        <Area type="monotone" dataKey="netWorth" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <SimulationChart
+                    chartType="area"
+                    data={netWorthData}
+                    lines={[{ dataKey: 'netWorth', name: 'Valeur nette', stroke: '#8884d8', fill: '#8884d8', fillOpacity: 0.3 }]}
+                    yAxisLabel="Valeur nette"
+                  />
                 </div>
                 {/* Income vs expenses chart */}
                 <div>
                   <h3 className="text-md font-medium mb-2">
                     Revenus vs Dépenses
                   </h3>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={results.years.map((year, i) => ({
-                    year,
-                    income: results.income[i],
-                    expenses: results.expenses[i]
-                  }))} margin={{
-                    top: 10,
-                    right: 30,
-                    left: 0,
-                    bottom: 0
-                  }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis dataKey="year" stroke="#aaa" />
-                        <YAxis stroke="#aaa" />
-                        <Tooltip formatter={value => [`${value.toLocaleString('fr-FR')}€`, '']} contentStyle={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px'
-                    }} />
-                        <Legend />
-                        <Line type="monotone" dataKey="income" name="Revenus" stroke="#82ca9d" activeDot={{
-                      r: 8
-                    }} />
-                        <Line type="monotone" dataKey="expenses" name="Dépenses" stroke="#ff7300" activeDot={{
-                      r: 8
-                    }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <SimulationChart
+                    chartType="line"
+                    data={incomeVsExpensesData}
+                    lines={[
+                      { dataKey: 'income', name: 'Revenus', stroke: '#82ca9d' },
+                      { dataKey: 'expenses', name: 'Dépenses', stroke: '#ff7300' },
+                    ]}
+                  />
                 </div>
                 {/* Key metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -27,22 +27,25 @@ export interface FinancialInsight {
   action: string;
   potentialSavings?: number;
 }
-export interface SimulationParams {
+export interface Simulation {
   name: string;
+  years: number;
   incomeGrowth: number;
   expenseReduction: number;
   savingsRate: number;
   investmentReturn: number;
   inflationRate: number;
-  years: number;
+  simulationType: 'normal' | 'optimistic' | 'pessimistic' | 'crisis';
 }
-export interface SimulationResult {
+
+export interface GoalSimulation {
+  name?: string;
   years: number[];
-  netWorth: number[];
-  savings: number[];
   income: number[];
   expenses: number[];
-  name?: string;
+  savings: number[];
+  netWorth: number[];
+  params: Simulation;
 }
 export interface QuestionSuggestion {
   id: string;

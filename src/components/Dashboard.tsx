@@ -296,7 +296,7 @@ export function Dashboard() {
     fill: '#ffc658'
   }];
   // Pie chart colors
-  const COLORS = themeColors?.chartColors || ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe'];
+  const COLORS = (themeColors?.chartColors?.length ? themeColors.chartColors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe']);
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
