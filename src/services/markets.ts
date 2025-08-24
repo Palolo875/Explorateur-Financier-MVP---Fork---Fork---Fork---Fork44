@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 // Service for fetching financial market data (stocks, crypto).
 export const USE_MOCK_DATA = true;
 
@@ -37,7 +39,8 @@ export async function fetchStockData(symbol: string): Promise<{ date: string; va
     return stockData;
   } catch (error) {
     console.error('Error fetching stock data:', error);
-    throw new Error('Could not fetch stock data.');
+    toast.error('Erreur lors de la récupération des données boursières.');
+    return [];
   }
 }
 
@@ -71,6 +74,7 @@ export async function fetchCryptoData(id: string = 'bitcoin'): Promise<{ date: s
     return cryptoData;
   } catch (error) {
     console.error('Error fetching crypto data:', error);
-    throw new Error('Could not fetch crypto data.');
+    toast.error('Erreur lors de la récupération des données de crypto-monnaie.');
+    return [];
   }
 }

@@ -253,7 +253,7 @@ export function HiddenFeesDetector() {
               <div>
                 <label className="block text-sm mb-1">Recherche</label>
                 <div className="relative">
-                  <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Rechercher des frais..." className="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-3 text-white" />
+                  <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Rechercher des frais..." className="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-3 text-white" aria-label="Rechercher des frais" />
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
@@ -261,17 +261,17 @@ export function HiddenFeesDetector() {
               <div>
                 <label className="block text-sm mb-1">Catégorie</label>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setSelectedCategory(null)} className={`px-2 py-1 rounded-full text-xs ${selectedCategory === null ? 'bg-indigo-600 text-white' : 'bg-black/30 text-gray-300 hover:bg-black/40'}`}>
+                  <button onClick={() => setSelectedCategory(null)} className={`px-2 py-1 rounded-full text-xs ${selectedCategory === null ? 'bg-indigo-600 text-white' : 'bg-black/30 text-gray-300 hover:bg-black/40'}`} aria-label="Toutes les catégories">
                     Toutes
                   </button>
-                  {categories.map((category, index) => <button key={index} onClick={() => setSelectedCategory(category)} className={`px-2 py-1 rounded-full text-xs ${selectedCategory === category ? 'bg-indigo-600 text-white' : 'bg-black/30 text-gray-300 hover:bg-black/40'}`}>
+                  {categories.map((category, index) => <button key={index} onClick={() => setSelectedCategory(category)} className={`px-2 py-1 rounded-full text-xs ${selectedCategory === category ? 'bg-indigo-600 text-white' : 'bg-black/30 text-gray-300 hover:bg-black/40'}`} aria-label={`Filtrer par ${category}`}>
                       {category}
                     </button>)}
                 </div>
               </div>
               {/* Actionable filter */}
               <div className="flex items-center">
-                <input type="checkbox" id="actionable" checked={showActionable} onChange={e => setShowActionable(e.target.checked)} className="mr-2" />
+                <input type="checkbox" id="actionable" checked={showActionable} onChange={e => setShowActionable(e.target.checked)} className="mr-2" aria-label="Afficher uniquement les frais actionnables" />
                 <label htmlFor="actionable" className="text-sm">
                   Afficher uniquement les frais actionnables
                 </label>
@@ -280,10 +280,10 @@ export function HiddenFeesDetector() {
               <div>
                 <label className="block text-sm mb-1">Trier par</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => setSortOrder('amount')} className={`py-1.5 px-3 rounded-lg text-sm ${sortOrder === 'amount' ? 'bg-indigo-600' : 'bg-black/30 hover:bg-black/40'}`}>
+                  <button onClick={() => setSortOrder('amount')} className={`py-1.5 px-3 rounded-lg text-sm ${sortOrder === 'amount' ? 'bg-indigo-600' : 'bg-black/30 hover:bg-black/40'}`} aria-label="Trier par montant">
                     Montant
                   </button>
-                  <button onClick={() => setSortOrder('saving')} className={`py-1.5 px-3 rounded-lg text-sm ${sortOrder === 'saving' ? 'bg-indigo-600' : 'bg-black/30 hover:bg-black/40'}`}>
+                  <button onClick={() => setSortOrder('saving')} className={`py-1.5 px-3 rounded-lg text-sm ${sortOrder === 'saving' ? 'bg-indigo-600' : 'bg-black/30 hover:bg-black/40'}`} aria-label="Trier par économie potentielle">
                     Économie
                   </button>
                 </div>

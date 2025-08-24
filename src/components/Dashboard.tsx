@@ -352,16 +352,16 @@ export function Dashboard() {
         </div>
         {/* Timeframe selector */}
         <div className="bg-black/20 p-1 rounded-full flex mb-6">
-          <button onClick={() => setTimeframe('month')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'month' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`}>
+          <button onClick={() => setTimeframe('month')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'month' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`} aria-label="Sélectionner la période du mois">
             Ce mois
           </button>
-          <button onClick={() => setTimeframe('quarter')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'quarter' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`}>
+          <button onClick={() => setTimeframe('quarter')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'quarter' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`} aria-label="Sélectionner la période du trimestre">
             Ce trimestre
           </button>
-          <button onClick={() => setTimeframe('year')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'year' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`}>
+          <button onClick={() => setTimeframe('year')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'year' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`} aria-label="Sélectionner la période de l'année">
             Cette année
           </button>
-          <button onClick={() => setTimeframe('all')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'all' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`}>
+          <button onClick={() => setTimeframe('all')} className={`flex-1 py-2 rounded-full text-sm ${timeframe === 'all' ? `bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} text-white` : 'hover:bg-black/20'}`} aria-label="Sélectionner toutes les périodes">
             Tout
           </button>
         </div>
@@ -816,19 +816,19 @@ export function Dashboard() {
       </div>
       {/* Action buttons - Fixed to use direct Link components */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/question" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all">
+        <Link to="/question" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Poser une nouvelle question">
           <SearchIcon className="h-5 w-5 mr-2 text-indigo-400" />
           <span>Nouvelle question</span>
         </Link>
-        <Link to="/simulation" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all">
+        <Link to="/simulation" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Voir les simulations">
           <LineChartIcon className="h-5 w-5 mr-2 text-green-400" />
           <span>Simulations</span>
         </Link>
-        <Link to="/reports" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all">
+        <Link to="/reports" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Voir les rapports">
           <BarChart3Icon className="h-5 w-5 mr-2 text-blue-400" />
           <span>Rapports</span>
         </Link>
-        <Link to="/settings" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all">
+        <Link to="/settings" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Ouvrir les paramètres">
           <SettingsIcon className="h-5 w-5 mr-2 text-purple-400" />
           <span>Paramètres</span>
         </Link>

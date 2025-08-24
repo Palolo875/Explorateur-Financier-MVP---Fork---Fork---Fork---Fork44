@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { AIFinanceService } from './AIFinanceService';
-import * as economy from './economy';
-import * as banking from './banking';
-import * as ml from './ml';
+import { AIFinanceService } from '@/services/AIFinanceService';
+import * as economy from '@/services/economy';
+import * as banking from '@/services/banking';
+import * as ml from '@/services/ml';
 
-vi.mock('./economy');
-vi.mock('./banking');
-vi.mock('./ml');
+vi.mock('@/services/economy');
+vi.mock('@/services/banking');
+vi.mock('@/services/ml');
 
 describe('AIFinanceService', () => {
   it('should initialize successfully', async () => {
