@@ -9,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { SimulationParams, SimulationResult } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
 import { toPng } from 'html-to-image';
+import { fetchInflationData, fetchInterestRates } from '../services/economy';
 // Advanced simulation types
 interface GoalSimulation {
   id: string;
@@ -85,6 +86,15 @@ export function AdvancedSimulation() {
     const initializeSimulations = async () => {
       try {
         setIsLoading(true);
+
+        const inflationData = await fetchInflationData();
+        const interestRateData = await fetchInterestRates();
+
+        setInflationRate(inflationData[inflationData.length - 1].value);
+        setGoalInflationRate(inflationData[inflationData.length - 1].value);
+        setInvestmentReturn(interestRateData[interestRateData.length - 1].value);
+        setGoalInterestRate(interestRateData[interestRateData.length - 1].value);
+
         // Create default simulations
         const defaultSimulation = {
           name: 'Simulation par défaut',

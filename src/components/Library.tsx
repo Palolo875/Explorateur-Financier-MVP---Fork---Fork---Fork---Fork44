@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, BookOpenIcon, DownloadIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, FileTextIcon, BookIcon, NewspaperIcon, FileIcon, ExternalLinkIcon, BarChartIcon, TrendingUpIcon, GlobeIcon, CreditCardIcon, HomeIcon, PiggyBankIcon, ShieldIcon } from 'lucide-react';
+import { fetchEducationContent, EducationResource } from '../services/education';
 interface Resource {
   id: string;
   title: string;
@@ -29,185 +30,31 @@ export function Library() {
   const [isLoading, setIsLoading] = useState(true);
   const [resources, setResources] = useState<Resource[]>([]);
   useEffect(() => {
-    // Simulate loading resources data
     const loadResources = async () => {
       setIsLoading(true);
-      // Mock resources data with real information and links
-      const mockResources: Resource[] = [{
-        id: '1',
-        title: "Guide complet de l'investisseur 2023",
-        description: 'Un guide détaillé pour les investisseurs débutants et intermédiaires avec les stratégies adaptées au contexte économique actuel.',
-        category: 'Investissement',
-        type: 'guide',
-        source: 'AMF',
-        url: 'https://www.amf-france.org/fr/actualites-publications/publications/guides/guides-epargnants',
-        image: 'https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        date: '2023-11-15',
-        featured: true,
-        tags: ['investissement', 'bourse', 'actions', 'obligations'],
-        rating: 4.8
-      }, {
-        id: '2',
-        title: "Rapport sur l'inflation et son impact sur l'épargne",
-        description: "Analyse approfondie de l'inflation actuelle et des stratégies pour protéger son épargne dans ce contexte.",
-        category: 'Économie',
-        type: 'rapport',
-        source: 'Banque de France',
-        url: 'https://www.banque-france.fr/statistiques/inflation',
-        image: 'https://images.unsplash.com/photo-1611324806964-dabc10078834?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        date: '2023-10-20',
-        tags: ['inflation', 'épargne', "pouvoir d'achat"],
-        rating: 4.6
-      }, {
-        id: '3',
-        title: 'Les ETF : comprendre et investir efficacement',
-        description: "Tout ce que vous devez savoir sur les ETF (fonds indiciels cotés) et comment les intégrer dans votre stratégie d'investissement.",
-        category: 'Investissement',
-        type: 'article',
-        source: 'Boursorama',
-        url: 'https://www.boursorama.com/bourse/trackers/definition-trackers-etf',
-        date: '2023-09-05',
-        tags: ['ETF', 'investissement passif', 'diversification'],
-        rating: 4.5
-      }, {
-        id: '4',
-        title: "Simulateur d'impôt sur le revenu 2023",
-        description: 'Outil officiel pour estimer votre impôt sur le revenu selon les dernières réglementations fiscales.',
-        category: 'Fiscalité',
-        type: 'outil',
-        source: 'Ministère des Finances',
-        url: 'https://www.impots.gouv.fr/simulateur-impot-sur-le-revenu',
-        date: '2023-12-01',
-        featured: true,
-        tags: ['impôts', 'fiscalité', 'simulation'],
-        rating: 4.7
-      }, {
-        id: '5',
-        title: "Investir dans l'immobilier en 2023 : opportunités et risques",
-        description: "Analyse du marché immobilier français actuel et des perspectives d'investissement dans ce secteur.",
-        category: 'Immobilier',
-        type: 'article',
-        source: 'SeLoger',
-        url: 'https://www.seloger.com/actualites/investissement-locatif/',
-        image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        date: '2023-11-10',
-        tags: ['immobilier', 'investissement locatif', 'SCPI'],
-        rating: 4.4
-      }, {
-        id: '6',
-        title: 'Guide des placements à revenu fixe',
-        description: "Comprendre les différents types de placements à revenu fixe et leur place dans votre allocation d'actifs.",
-        category: 'Investissement',
-        type: 'guide',
-        source: 'La Finance Pour Tous',
-        url: 'https://www.lafinancepourtous.com/decryptages/marches-financiers/produits-financiers/obligations/',
-        date: '2023-08-15',
-        tags: ['obligations', 'revenu fixe', "taux d'intérêt"],
-        rating: 4.3
-      }, {
-        id: '7',
-        title: "La finance comportementale : comprendre vos biais d'investissement",
-        description: 'Comment les biais psychologiques influencent nos décisions financières et comment les surmonter.',
-        category: 'Psychologie',
-        type: 'article',
-        source: 'Café de la Bourse',
-        url: 'https://www.cafedelabourse.com/archive/article/finance-comportementale',
-        date: '2023-10-05',
-        tags: ['psychologie', 'biais cognitifs', 'prise de décision'],
-        rating: 4.9
-      }, {
-        id: '8',
-        title: 'Rapport sur les crypto-actifs et la régulation',
-        description: "État des lieux de la régulation des crypto-actifs en France et en Europe et perspectives d'évolution.",
-        category: 'Cryptomonnaies',
-        type: 'rapport',
-        source: 'AMF',
-        url: 'https://www.amf-france.org/fr/actualites-publications/publications/rapports-etudes-et-analyses/crypto-actifs',
-        date: '2023-11-30',
-        tags: ['crypto', 'blockchain', 'régulation', 'MiCA'],
-        rating: 4.6
-      }, {
-        id: '9',
-        title: 'Assurance-vie : guide complet et comparatif 2023',
-        description: "Tout savoir sur l'assurance-vie, ses avantages fiscaux et les meilleures offres du marché.",
-        category: 'Assurance',
-        type: 'guide',
-        source: 'Moneyvox',
-        url: 'https://www.moneyvox.fr/assurance-vie/',
-        image: 'https://images.unsplash.com/photo-1563237023-b1e970526dcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        date: '2023-12-05',
-        featured: true,
-        tags: ['assurance-vie', 'épargne', 'fiscalité'],
-        rating: 4.7
-      }, {
-        id: '10',
-        title: 'Les fondamentaux de la gestion budgétaire',
-        description: 'Méthodes et outils pour établir et suivre un budget personnel ou familial efficace.',
-        category: 'Budgétisation',
-        type: 'guide',
-        source: 'Institut National de la Consommation',
-        url: 'https://www.inc-conso.fr/content/budget-familial',
-        date: '2023-07-10',
-        tags: ['budget', 'épargne', 'dépenses'],
-        rating: 4.5
-      }, {
-        id: '11',
-        title: 'Analyse des marchés boursiers : tendances 2023-2024',
-        description: 'Perspectives et analyses des marchés financiers mondiaux pour les prochains trimestres.',
-        category: 'Marchés financiers',
-        type: 'rapport',
-        source: 'Les Échos',
-        url: 'https://investir.lesechos.fr/marches/',
-        date: '2023-12-01',
-        tags: ['bourse', 'actions', 'prévisions'],
-        rating: 4.4
-      }, {
-        id: '12',
-        title: 'Calculateur de rentabilité immobilière',
-        description: "Outil pour évaluer la rentabilité d'un investissement immobilier locatif.",
-        category: 'Immobilier',
-        type: 'outil',
-        source: 'PAP',
-        url: 'https://www.pap.fr/investisseur/calculette-rentabilite',
-        date: '2023-09-20',
-        tags: ['immobilier', 'rentabilité', 'investissement'],
-        rating: 4.8
-      }, {
-        id: '13',
-        title: 'La retraite par capitalisation : options et stratégies',
-        description: "Guide sur les différents dispositifs d'épargne retraite disponibles en France après la réforme.",
-        category: 'Retraite',
-        type: 'guide',
-        source: 'La Retraite en Clair',
-        url: 'https://www.la-retraite-en-clair.fr/parcours-professionnel-regimes-retraite/epargne-retraite-complementaire/epargne-retraite',
-        date: '2023-10-15',
-        tags: ['retraite', 'PER', 'épargne long terme'],
-        rating: 4.6
-      }, {
-        id: '14',
-        title: 'Protection contre les arnaques financières',
-        description: 'Comment identifier et se protéger contre les fraudes et arnaques financières de plus en plus sophistiquées.',
-        category: 'Sécurité',
-        type: 'article',
-        source: 'ACPR',
-        url: 'https://acpr.banque-france.fr/proteger-la-clientele/comment-se-proteger-contre-les-arnaques',
-        date: '2023-11-25',
-        tags: ['arnaques', 'fraude', 'cybersécurité'],
-        rating: 4.9
-      }, {
-        id: '15',
-        title: 'Comparateur de frais bancaires',
-        description: 'Outil pour comparer les tarifs des services bancaires des principales banques françaises.',
-        category: 'Banque',
-        type: 'outil',
-        source: 'Moneyvox',
-        url: 'https://www.moneyvox.fr/banque/comparatif/',
-        date: '2023-12-10',
-        tags: ['banque', 'frais', 'comparaison'],
-        rating: 4.7
-      }];
-      setResources(mockResources);
-      setIsLoading(false);
+      try {
+        const educationalContent = await fetchEducationContent();
+        const resourcesData = educationalContent.map((resource, index) => ({
+          id: resource.key,
+          title: resource.title,
+          description: `Un livre par ${resource.author_name.join(', ')}, publié en ${resource.first_publish_year}.`,
+          category: 'Littérature financière',
+          type: 'guide',
+          source: 'Open Library',
+          url: `https://openlibrary.org${resource.key}`,
+          image: `https://covers.openlibrary.org/b/id/${resource.key}-M.jpg`,
+          date: resource.first_publish_year.toString(),
+          featured: index < 3,
+          tags: ['livre', 'finance'],
+          rating: 4.5, // Placeholder
+        }));
+        setResources(resourcesData);
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+        toast.error('Erreur lors du chargement des ressources');
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadResources();
   }, []);

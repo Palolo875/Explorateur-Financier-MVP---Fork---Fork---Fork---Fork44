@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, GraduationCapIcon, BookOpenIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, CheckCircleIcon, PlayCircleIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
+import { fetchEducationContent, EducationResource } from '../services/education';
 interface Lesson {
   id: string;
   title: string;
@@ -30,139 +31,32 @@ export function Lessons() {
   const [isLoading, setIsLoading] = useState(true);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   useEffect(() => {
-    // Simulate loading lessons data
     const loadLessons = async () => {
       setIsLoading(true);
-      // Mock lessons data with real information and links
-      const mockLessons: Lesson[] = [{
-        id: '1',
-        title: 'Comprendre les marchés financiers en 2023',
-        description: 'Une introduction complète aux marchés financiers, avec les dernières tendances et évolutions post-pandémie.',
-        category: 'Investissement',
-        level: 'débutant',
-        duration: 45,
-        image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.amf-france.org/fr/espace-epargnants/comprendre-les-marches-financiers',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-10-15',
-        source: 'AMF (Autorité des Marchés Financiers)',
-        rating: 4.7
-      }, {
-        id: '2',
-        title: "Stratégies d'épargne efficaces pour 2023",
-        description: "Découvrez les meilleures stratégies d'épargne adaptées au contexte économique actuel et aux taux d'intérêt.",
-        category: 'Épargne',
-        level: 'débutant',
-        duration: 30,
-        image: 'https://images.unsplash.com/photo-1579621970588-a35d0e7ab9b6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.lafinancepourtous.com/pratique/epargne/',
-        completed: true,
-        progress: 100,
-        lastUpdated: '2023-09-05',
-        source: 'La Finance Pour Tous',
-        rating: 4.5
-      }, {
-        id: '3',
-        title: 'Analyse fondamentale des actions',
-        description: "Apprenez à analyser les entreprises cotées en bourse en utilisant les méthodes d'analyse fondamentale.",
-        category: 'Investissement',
-        level: 'intermédiaire',
-        duration: 60,
-        image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.boursorama.com/bourse/apprendre/analyse-fondamentale/',
-        completed: false,
-        progress: 45,
-        lastUpdated: '2023-11-20',
-        source: 'Boursorama',
-        rating: 4.8
-      }, {
-        id: '4',
-        title: 'Optimisation fiscale légale pour particuliers',
-        description: 'Comment réduire légalement votre imposition grâce aux dispositifs fiscaux en vigueur en France.',
-        category: 'Fiscalité',
-        level: 'intermédiaire',
-        duration: 55,
-        image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.economie.gouv.fr/particuliers/impot-revenu-reduction-credit-impot',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-12-01',
-        source: "Ministère de l'Économie",
-        rating: 4.6
-      }, {
-        id: '5',
-        title: 'Investissement immobilier locatif',
-        description: "Guide complet pour investir dans l'immobilier locatif : sélection, financement, gestion et fiscalité.",
-        category: 'Immobilier',
-        level: 'avancé',
-        duration: 75,
-        image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.anil.org/votre-projet/vous-achetez-vous-construisez/investissement-locatif/',
-        completed: false,
-        progress: 20,
-        lastUpdated: '2023-11-10',
-        source: 'ANIL',
-        rating: 4.9
-      }, {
-        id: '6',
-        title: 'Cryptomonnaies et blockchain expliquées',
-        description: 'Comprendre les fondamentaux des cryptomonnaies, de la blockchain et leur impact sur la finance moderne.',
-        category: 'Cryptomonnaies',
-        level: 'intermédiaire',
-        duration: 50,
-        image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.amf-france.org/fr/espace-epargnants/comprendre-les-produits-financiers/actifs-numeriques-crypto-actifs',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-12-05',
-        source: 'AMF',
-        rating: 4.7
-      }, {
-        id: '7',
-        title: 'Planification de la retraite',
-        description: 'Comment préparer efficacement sa retraite avec les dernières réformes et dispositifs disponibles.',
-        category: 'Retraite',
-        level: 'débutant',
-        duration: 40,
-        image: 'https://images.unsplash.com/photo-1574482620703-28f9b77330d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.la-retraite-en-clair.fr/',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-10-20',
-        source: 'La Retraite en Clair',
-        rating: 4.5
-      }, {
-        id: '8',
-        title: "Gestion des risques d'investissement",
-        description: 'Techniques avancées pour identifier, mesurer et gérer les risques dans vos investissements.',
-        category: 'Investissement',
-        level: 'avancé',
-        duration: 65,
-        image: 'https://images.unsplash.com/photo-1633158829875-e5316a358c6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.amf-france.org/fr/espace-epargnants/savoir-bien-investir/cadrer-son-projet/connaitre-les-risques',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-11-25',
-        source: 'AMF',
-        rating: 4.8
-      }, {
-        id: '9',
-        title: 'ESG et investissement responsable',
-        description: "Comment intégrer les critères environnementaux, sociaux et de gouvernance dans vos décisions d'investissement.",
-        category: 'Investissement durable',
-        level: 'intermédiaire',
-        duration: 45,
-        image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-        url: 'https://www.frenchsif.org/isr-esg/',
-        completed: false,
-        progress: 0,
-        lastUpdated: '2023-12-10',
-        source: "Forum pour l'Investissement Responsable",
-        rating: 4.6
-      }];
-      setLessons(mockLessons);
-      setIsLoading(false);
+      try {
+        const educationalContent = await fetchEducationContent();
+        const lessonsData = educationalContent.map((resource, index) => ({
+          id: resource.key,
+          title: resource.title,
+          description: `Un livre par ${resource.author_name.join(', ')}, publié en ${resource.first_publish_year}.`,
+          category: 'Littérature financière',
+          level: index % 3 === 0 ? 'débutant' : index % 3 === 1 ? 'intermédiaire' : 'avancé',
+          duration: 60, // Placeholder
+          image: `https://covers.openlibrary.org/b/id/${resource.key}-M.jpg`,
+          url: `https://openlibrary.org${resource.key}`,
+          completed: false,
+          progress: 0,
+          lastUpdated: resource.first_publish_year.toString(),
+          source: 'Open Library',
+          rating: 4.5, // Placeholder
+        }));
+        setLessons(lessonsData);
+      } catch (error) {
+        console.error('Error fetching lessons:', error);
+        toast.error('Erreur lors du chargement des leçons');
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadLessons();
   }, []);
