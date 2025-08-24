@@ -5,6 +5,7 @@ import { useFinance } from '../context/FinanceContext';
 import { SearchIcon, AlertCircleIcon, CheckCircleIcon, TrendingDownIcon, RefreshCwIcon, DownloadIcon, BarChart3Icon, CreditCardIcon, InfoIcon, PhoneIcon, MailIcon, ExternalLinkIcon, CalendarIcon, TagIcon } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { fetchTransactions, Transaction } from '../services/banking';
 // Types for hidden fees
 interface HiddenFee {
   id: string;
@@ -42,94 +43,50 @@ export function HiddenFeesDetector() {
     const detectFees = async () => {
       setIsLoading(true);
       try {
-        // In a real app, this would call an API
-        // For now, we'll create mock data
-        const mockHiddenFees: HiddenFee[] = [{
-          id: 'fee-1',
-          category: 'Abonnements',
-          amount: 14.99,
-          description: 'Abonnement streaming non utilisé depuis 3 mois',
-          potentialSaving: 14.99,
-          actionable: true,
-          actionType: 'cancel',
-          actionDetails: "Annuler l'abonnement sur le site du fournisseur",
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-2',
-          category: 'Frais bancaires',
-          amount: 9.9,
-          description: 'Frais de tenue de compte supérieurs à la moyenne du marché',
-          potentialSaving: 7.5,
-          actionable: true,
-          actionType: 'negotiate',
-          actionDetails: 'Contacter votre conseiller pour négocier une réduction',
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-3',
-          category: 'Assurances',
-          amount: 45.0,
-          description: 'Assurance habitation - tarif 20% au-dessus du marché',
-          potentialSaving: 9.0,
-          actionable: true,
-          actionType: 'switch',
-          actionDetails: 'Comparer les offres et changer de fournisseur',
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-4',
-          category: 'Énergie',
-          amount: 120.0,
-          description: "Facture d'électricité - tarif non optimisé",
-          potentialSaving: 18.0,
-          actionable: true,
-          actionType: 'switch',
-          actionDetails: 'Changer de fournisseur pour un tarif plus avantageux',
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-5',
-          category: 'Télécom',
-          amount: 39.99,
-          description: 'Forfait mobile avec options inutilisées',
-          potentialSaving: 15.0,
-          actionable: true,
-          actionType: 'call',
-          actionDetails: 'Appeler le service client pour ajuster votre forfait',
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-6',
-          category: 'Abonnements',
-          amount: 9.99,
-          description: 'Abonnement application mobile redondant',
-          potentialSaving: 9.99,
-          actionable: true,
-          actionType: 'cancel',
-          actionDetails: "Annuler l'abonnement via les paramètres de votre téléphone",
-          recurrenceType: 'monthly'
-        }, {
-          id: 'fee-7',
-          category: 'Frais bancaires',
-          amount: 32.0,
-          description: 'Frais de découvert bancaire évitables',
-          potentialSaving: 32.0,
-          actionable: false,
-          recurrenceType: 'quarterly'
-        }, {
-          id: 'fee-8',
-          category: 'Taxes',
-          amount: 120.0,
-          description: 'Optimisation fiscale manquante sur vos placements',
-          potentialSaving: 120.0,
-          actionable: true,
-          actionType: 'email',
-          actionDetails: 'Contacter un conseiller fiscal pour optimiser vos placements',
-          recurrenceType: 'yearly'
-        }];
+        const transactions = await fetchTransactions();
+        const detectedFees: HiddenFee[] = [];
+
+        // Detect recurring subscriptions
+        const recurring = transactions.filter(t => t.category.includes('Subscription'));
+        recurring.forEach(t => {
+            detectedFees.push({
+                id: `fee-${t.transaction_id}`,
+                category: 'Abonnements',
+                amount: t.amount,
+                description: `Abonnement récurrent: ${t.name}`,
+                potentialSaving: t.amount,
+                actionable: true,
+                actionType: 'cancel',
+                actionDetails: `Annuler l'abonnement sur le site de ${t.name}`,
+                recurrenceType: 'monthly',
+            });
+        });
+
+        // Detect unusual bank fees
+        const bankFees = transactions.filter(t => t.name.toLowerCase().includes('fee') || t.name.toLowerCase().includes('charge'));
+        bankFees.forEach(t => {
+            if (t.amount > 10) { // Assume fees over 10 are unusual
+                detectedFees.push({
+                    id: `fee-${t.transaction_id}`,
+                    category: 'Frais bancaires',
+                    amount: t.amount,
+                    description: `Frais bancaires inhabituels: ${t.name}`,
+                    potentialSaving: t.amount,
+                    actionable: true,
+                    actionType: 'negotiate',
+                    actionDetails: 'Contacter votre conseiller pour négocier une réduction',
+                    recurrenceType: 'one-time',
+                });
+            }
+        });
+
         // Calculate total potential savings
-        const total = mockHiddenFees.reduce((sum, fee) => sum + fee.potentialSaving, 0);
-        const annual = mockHiddenFees.reduce((sum, fee) => {
+        const total = detectedFees.reduce((sum, fee) => sum + fee.potentialSaving, 0);
+        const annual = detectedFees.reduce((sum, fee) => {
           const multiplier = fee.recurrenceType === 'monthly' ? 12 : fee.recurrenceType === 'quarterly' ? 4 : fee.recurrenceType === 'yearly' ? 1 : 1;
           return sum + fee.potentialSaving * multiplier;
         }, 0);
-        setHiddenFees(mockHiddenFees);
+        setHiddenFees(detectedFees);
         setTotalSavings(total);
         setAnnualSavings(annual);
       } catch (error) {

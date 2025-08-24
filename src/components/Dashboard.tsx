@@ -12,6 +12,8 @@ import { fr } from 'date-fns/locale';
 import { FinancialInsight } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
 import CountUp from 'react-countup';
+import { fetchStockData, fetchCryptoData } from '../services/markets';
+import { fetchTransactions, Transaction } from '../services/banking';
 // Type for dashboard notification
 interface DashboardNotification {
   id: string;
@@ -67,87 +69,45 @@ export function Dashboard() {
   const balance = totalIncome - totalExpenses;
   const netWorth = calculateNetWorth() || 0;
   const savingsRate = totalIncome > 0 ? (totalIncome - totalExpenses) / totalIncome * 100 : 0;
-  // Generate mock historical data if not available
+
   useEffect(() => {
-    const generateMockHistoricalData = () => {
-      const today = new Date();
-      const data = [];
-      for (let i = 5; i >= 0; i--) {
-        const date = subMonths(today, i);
-        const monthName = format(date, 'MMM', {
-          locale: fr
-        });
-        const variationIncome = 1 + (Math.random() * 0.2 - 0.1); // -10% to +10%
-        const variationExpenses = 1 + (Math.random() * 0.2 - 0.1); // -10% to +10%
-        data.push({
-          month: monthName,
-          income: Math.round(totalIncome * variationIncome),
-          expenses: Math.round(totalExpenses * variationExpenses),
-          balance: Math.round(totalIncome * variationIncome - totalExpenses * variationExpenses),
-          savings: Math.round((totalIncome * variationIncome - totalExpenses * variationExpenses) * 0.7),
-          investments: Math.round((totalIncome * variationIncome - totalExpenses * variationExpenses) * 0.3)
-        });
-      }
-      return data;
-    };
-    // Initialize data
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Get insights
-        let fetchedInsights = [];
-        try {
-          fetchedInsights = (await generateInsights()) || [];
-        } catch (error) {
-          console.error('Erreur lors de la récupération des insights:', error);
-          fetchedInsights = [];
-        }
+        const transactions = await fetchTransactions();
+        const monthlyData = transactions.reduce((acc, t) => {
+          const month = format(new Date(t.date), 'yyyy-MM');
+          if (!acc[month]) {
+            acc[month] = { income: 0, expenses: 0, balance: 0, savings: 0, investments: 0, month: format(new Date(t.date), 'MMM', { locale: fr }) };
+          }
+          if (t.amount < 0) {
+            acc[month].income += Math.abs(t.amount);
+          } else {
+            acc[month].expenses += t.amount;
+          }
+          return acc;
+        }, {} as Record<string, any>);
+
+        const historicalData = Object.values(monthlyData).map(month => {
+          month.balance = month.income - month.expenses;
+          month.savings = month.balance > 0 ? month.balance * (savingsRate / 100) : 0;
+          return month;
+        });
+
+        setHistoricalData(historicalData);
+
+        // Other data fetching
+        const fetchedInsights = (await generateInsights()) || [];
         setInsights(fetchedInsights);
-        // Get health score
-        let health = {
-          score: 50
-        };
-        try {
-          health = (await getFinancialHealth()) || {
-            score: 50
-          };
-        } catch (error) {
-          console.error('Erreur lors de la récupération du score de santé:', error);
-        }
+        const health = (await getFinancialHealth()) || { score: 50 };
         setHealthScore(health?.score || 50);
-        // Get hidden fees
-        let fees = {
-          totalAmount: 0,
-          items: []
-        };
-        try {
-          fees = (await detectHiddenFees()) || {
-            totalAmount: 0,
-            items: []
-          };
-        } catch (error) {
-          console.error('Erreur lors de la détection des frais cachés:', error);
-        }
+        const fees = (await detectHiddenFees()) || { totalAmount: 0, items: [] };
         setHiddenFees(fees);
-        // Get historical data (or generate mock data)
-        let history = [];
-        try {
-          history = (await getHistoricalData()) || [];
-        } catch (error) {
-          console.error('Erreur lors de la récupération des données historiques:', error);
-          history = [];
-        }
-        setHistoricalData(history.length ? history : generateMockHistoricalData());
-        // Get predictions
-        try {
-          const futureData = await getPredictions();
-          setPredictions(futureData);
-        } catch (error) {
-          console.error('Erreur lors de la récupération des prédictions:', error);
-        }
-        // Generate notifications
+        const futureData = await getPredictions();
+        setPredictions(futureData);
         generateNotifications();
         setLastUpdate(new Date());
+
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         toast.error('Erreur lors du chargement des données');

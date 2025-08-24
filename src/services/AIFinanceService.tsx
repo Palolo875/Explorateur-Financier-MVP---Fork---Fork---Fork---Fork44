@@ -1,5 +1,12 @@
 import React from 'react';
 import { FinancialItem, FinancialInsight, SimulationParams, SimulationResult } from '../types/finance';
+import { fetchInflationData, fetchInterestRates } from './economy';
+import { fetchStockData, fetchCryptoData } from './markets';
+import { fetchTransactions } from './banking';
+import { predictCashflow } from './ml';
+import { categorizeTransaction } from '../utils/aiCategorization';
+import { runSimulation as runFinancialSimulation } from '../utils/financialCalculations';
+
 // Modèle de scoring IA pour l'analyse financière
 interface AIModelParams {
   financialData: any;
@@ -75,6 +82,23 @@ export class AIFinanceService {
     }
     // Limiter le score entre 0 et 100
     score = Math.max(0, Math.min(100, score));
+
+    // Ajout de la prédiction de cashflow au score
+    const transactions = await fetchTransactions();
+    const cashflowPrediction = predictCashflow(transactions.map(t => ({ date: t.date, amount: t.amount })));
+    if (cashflowPrediction < 0) {
+      score -= 10;
+      weaknesses.push('Prévision de cashflow négative');
+    }
+
+    // Ajout des taux d'intérêt au score
+    const interestRates = await fetchInterestRates();
+    if (interestRates.length > 0 && interestRates[0].value > 5) {
+      score -= 5;
+      weaknesses.push('Taux d\'intérêt élevés');
+    }
+
+
     // Définir le statut en fonction du score
     let status = 'Critique';
     if (score >= 80) status = 'Excellente';else if (score >= 60) status = 'Bonne';else if (score >= 40) status = 'Moyenne';else if (score >= 20) status = 'Faible';
@@ -212,72 +236,48 @@ export class AIFinanceService {
         });
       }
     }
+
+    // Cashflow prediction insight
+    const transactions = await fetchTransactions();
+    const cashflowPrediction = predictCashflow(transactions.map(t => ({ date: t.date, amount: t.amount })));
+    if (cashflowPrediction < 0) {
+      insights.push({
+        id: 'cashflow-prediction-negative',
+        title: 'Prévision de cashflow négative',
+        description: `Notre modèle prédit un cashflow négatif de ${cashflowPrediction.toFixed(2)} pour le mois prochain.`,
+        category: 'cashflow',
+        impact: 'high',
+        action: 'Analysez vos dépenses et revenus pour éviter un solde négatif.'
+      });
+    }
+
+
     this.lastUpdate = new Date();
     return insights;
   }
   // Exécuter des simulations financières avancées
   public async runSimulation(params: SimulationParams): Promise<SimulationResult> {
     if (!this.isInitialized) await this.initialize();
-    const {
-      name,
-      incomeGrowth = 2,
-      expenseReduction = 1,
-      savingsRate = 50,
-      investmentReturn = 5,
-      inflationRate = 2,
-      years = 10
-    } = params;
-    // Simulation plus réaliste avec calculs avancés
-    const initialIncome = 2500;
-    const initialExpenses = 1800;
-    const initialSavings = 5000;
-    const yearsArray: number[] = [];
-    const incomeArray: number[] = [];
-    const expensesArray: number[] = [];
-    const savingsArray: number[] = [];
-    const netWorthArray: number[] = [];
-    let currentIncome = initialIncome;
-    let currentExpenses = initialExpenses;
-    let currentSavings = initialSavings;
-    let currentNetWorth = initialSavings;
-    for (let i = 0; i <= years; i++) {
-      yearsArray.push(new Date().getFullYear() + i);
-      if (i > 0) {
-        // Augmentation des revenus avec croissance composée
-        currentIncome *= 1 + incomeGrowth / 100;
-        // Réduction des dépenses (avec un plancher)
-        if (i <= 5) {
-          // Limite la réduction aux 5 premières années
-          currentExpenses *= 1 - expenseReduction / 100;
-        } else {
-          // Après 5 ans, les dépenses augmentent avec l'inflation
-          currentExpenses *= 1 + inflationRate / 100;
-        }
-        // Calcul de l'épargne mensuelle
-        const monthlySavings = Math.max(0, currentIncome - currentExpenses);
-        // Allocation de l'épargne selon le taux d'épargne
-        const newSavings = monthlySavings * (savingsRate / 100) * 12;
-        const newInvestments = monthlySavings * (1 - savingsRate / 100) * 12;
-        // Rendement des investissements existants
-        const investmentGrowth = (currentNetWorth - currentSavings) * (investmentReturn / 100);
-        // Mise à jour des totaux
-        currentSavings += newSavings;
-        currentNetWorth += newSavings + newInvestments + investmentGrowth;
+
+    const inflationData = await fetchInflationData();
+    const inflationRate = inflationData.length > 0 ? inflationData[0].value : 2;
+
+    const simulationResult = runFinancialSimulation(
+      {
+        incomes: params.incomes,
+        expenses: params.expenses,
+        savings: params.savings,
+        investments: params.investments,
+        debts: params.debts,
+      },
+      {
+        ...params,
+        inflationRate,
       }
-      incomeArray.push(Math.round(currentIncome));
-      expensesArray.push(Math.round(currentExpenses));
-      savingsArray.push(Math.round(currentSavings));
-      netWorthArray.push(Math.round(currentNetWorth));
-    }
+    );
+
     this.lastUpdate = new Date();
-    return {
-      name,
-      years: yearsArray,
-      income: incomeArray,
-      expenses: expensesArray,
-      savings: savingsArray,
-      netWorth: netWorthArray
-    };
+    return simulationResult;
   }
   // Détecter les frais cachés et optimisations potentielles
   public async detectHiddenFees(financialData: any): Promise<{
@@ -289,65 +289,27 @@ export class AIFinanceService {
     }>;
   }> {
     if (!this.isInitialized) await this.initialize();
+
+    const transactions = await fetchTransactions();
     const hiddenFees: Array<{
       category: string;
       amount: number;
       description: string;
     }> = [];
     let totalAmount = 0;
-    // Analyser les dépenses récurrentes
-    const recurringExpenses = (financialData.expenses || []).filter((expense: FinancialItem) => expense.isRecurring);
-    // Détecter les abonnements potentiellement non utilisés
-    const subscriptions = recurringExpenses.filter((expense: FinancialItem) => {
-      const category = expense.category.toLowerCase();
-      return category.includes('abonnement') || category.includes('streaming') || category.includes('service');
-    });
-    if (subscriptions.length > 2) {
-      const subscriptionTotal = this.calculateTotalValue(subscriptions);
-      const potentialSaving = subscriptionTotal * 0.3;
-      hiddenFees.push({
-        category: 'Abonnements multiples',
-        amount: Math.round(potentialSaving),
-        description: 'Vous avez plusieurs abonnements. Envisagez de regrouper ou annuler ceux que vous utilisez peu.'
-      });
-      totalAmount += potentialSaving;
-    }
-    // Détecter les frais bancaires potentiellement élevés
-    const bankFees = recurringExpenses.filter((expense: FinancialItem) => {
-      const category = expense.category.toLowerCase();
-      return category.includes('banque') || category.includes('frais');
-    });
-    if (bankFees.length > 0) {
-      const bankFeesTotal = this.calculateTotalValue(bankFees);
-      if (bankFeesTotal > 10) {
+
+    for (const transaction of transactions) {
+      const category = await categorizeTransaction(transaction.name, 'expense', transaction.amount);
+      if (category === 'utilities' || category === 'transport' || category === 'other_expense') {
         hiddenFees.push({
-          category: 'Frais bancaires',
-          amount: Math.round(bankFeesTotal),
-          description: "Vos frais bancaires semblent élevés. Comparez les offres d'autres banques ou négociez."
+          category: 'Frais cachés potentiels',
+          amount: transaction.amount,
+          description: transaction.name,
         });
-        totalAmount += bankFeesTotal;
+        totalAmount += transaction.amount;
       }
     }
-    // Simuler la détection d'autres frais cachés
-    const totalExpenses = this.calculateTotalValue(financialData.expenses || []);
-    if (totalExpenses > 0) {
-      // Assurances potentiellement optimisables
-      const potentialInsuranceSaving = totalExpenses * 0.02;
-      hiddenFees.push({
-        category: 'Assurances',
-        amount: Math.round(potentialInsuranceSaving),
-        description: "Comparez vos assurances avec d'autres offres pour potentiellement économiser."
-      });
-      totalAmount += potentialInsuranceSaving;
-      // Économies d'énergie potentielles
-      const potentialEnergySaving = totalExpenses * 0.015;
-      hiddenFees.push({
-        category: 'Énergie',
-        amount: Math.round(potentialEnergySaving),
-        description: "Vérifiez si vous pouvez réduire vos factures d'énergie avec un autre fournisseur."
-      });
-      totalAmount += potentialEnergySaving;
-    }
+
     this.lastUpdate = new Date();
     return {
       totalAmount,
