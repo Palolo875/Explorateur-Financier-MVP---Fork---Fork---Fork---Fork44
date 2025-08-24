@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 // Service for open banking integration (e.g., Plaid).
 export const USE_MOCK_DATA = true;
 
@@ -53,6 +55,7 @@ export async function fetchTransactions(): Promise<Transaction[]> {
     }));
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    throw new Error('Could not fetch transactions.');
+    toast.error('Erreur lors de la récupération des transactions.');
+    return [];
   }
 }

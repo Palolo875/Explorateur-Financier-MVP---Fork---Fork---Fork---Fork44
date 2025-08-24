@@ -917,7 +917,7 @@ export function AdvancedSimulation() {
                   <label className="block text-sm font-medium mb-1">
                     Nom de la simulation
                   </label>
-                  <input type="text" value={simulationName} onChange={e => setSimulationName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+                  <input type="text" value={simulationName} onChange={e => setSimulationName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Nom de la simulation" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -926,7 +926,7 @@ export function AdvancedSimulation() {
                       {incomeGrowth}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="10" step="0.1" value={incomeGrowth} onChange={e => setIncomeGrowth(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="10" step="0.1" value={incomeGrowth} onChange={e => setIncomeGrowth(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Croissance des revenus" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>5%</span>
@@ -940,7 +940,7 @@ export function AdvancedSimulation() {
                       {expenseReduction}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="5" step="0.1" value={expenseReduction} onChange={e => setExpenseReduction(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="5" step="0.1" value={expenseReduction} onChange={e => setExpenseReduction(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Réduction des dépenses" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>2.5%</span>
@@ -954,7 +954,7 @@ export function AdvancedSimulation() {
                       {savingsRate}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="100" step="5" value={savingsRate} onChange={e => setSavingsRate(parseInt(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="100" step="5" value={savingsRate} onChange={e => setSavingsRate(parseInt(e.target.value))} className="w-full accent-indigo-500" aria-label="Taux d'épargne" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>50%</span>
@@ -968,7 +968,7 @@ export function AdvancedSimulation() {
                       {investmentReturn}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="12" step="0.5" value={investmentReturn} onChange={e => setInvestmentReturn(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="12" step="0.5" value={investmentReturn} onChange={e => setInvestmentReturn(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Rendement des investissements" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>6%</span>
@@ -982,7 +982,7 @@ export function AdvancedSimulation() {
                       {inflationRate}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="5" step="0.1" value={inflationRate} onChange={e => setInflationRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="5" step="0.1" value={inflationRate} onChange={e => setInflationRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Taux d'inflation" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>2.5%</span>
@@ -996,7 +996,7 @@ export function AdvancedSimulation() {
                       {years} ans
                     </span>
                   </label>
-                  <input type="range" min="1" max="40" value={years} onChange={e => setYears(parseInt(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="1" max="40" value={years} onChange={e => setYears(parseInt(e.target.value))} className="w-full accent-indigo-500" aria-label="Horizon en années" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>1 an</span>
                     <span>20 ans</span>
@@ -1149,14 +1149,14 @@ export function AdvancedSimulation() {
                   <label className="block text-sm font-medium mb-1">
                     Nom de l'objectif
                   </label>
-                  <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" placeholder="Ex: Fonds d'urgence, Voyage, etc." />
+                  <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" placeholder="Ex: Fonds d'urgence, Voyage, etc." aria-label="Nom de l'objectif" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Montant cible (€)
                   </label>
                   <div className="relative">
-                    <input type="number" value={targetAmount} onChange={e => setTargetAmount(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+                    <input type="number" value={targetAmount} onChange={e => setTargetAmount(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Montant cible" />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <span className="text-gray-400">€</span>
                     </div>
@@ -1167,7 +1167,7 @@ export function AdvancedSimulation() {
                     Montant déjà épargné (€)
                   </label>
                   <div className="relative">
-                    <input type="number" value={currentAmount} onChange={e => setCurrentAmount(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+                    <input type="number" value={currentAmount} onChange={e => setCurrentAmount(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Montant déjà épargné" />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <span className="text-gray-400">€</span>
                     </div>
@@ -1178,7 +1178,7 @@ export function AdvancedSimulation() {
                     Contribution mensuelle (€)
                   </label>
                   <div className="relative">
-                    <input type="number" value={monthlyContribution} onChange={e => setMonthlyContribution(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+                    <input type="number" value={monthlyContribution} onChange={e => setMonthlyContribution(Math.max(0, parseInt(e.target.value) || 0))} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 pr-8 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Contribution mensuelle" />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <span className="text-gray-400">€</span>
                     </div>
@@ -1191,7 +1191,7 @@ export function AdvancedSimulation() {
                       {goalInterestRate}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="10" step="0.1" value={goalInterestRate} onChange={e => setGoalInterestRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="10" step="0.1" value={goalInterestRate} onChange={e => setGoalInterestRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Taux d'intérêt du but" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>5%</span>
@@ -1205,7 +1205,7 @@ export function AdvancedSimulation() {
                       {goalInflationRate}%
                     </span>
                   </label>
-                  <input type="range" min="0" max="5" step="0.1" value={goalInflationRate} onChange={e => setGoalInflationRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="0" max="5" step="0.1" value={goalInflationRate} onChange={e => setGoalInflationRate(parseFloat(e.target.value))} className="w-full accent-indigo-500" aria-label="Taux d'inflation du but" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>0%</span>
                     <span>2.5%</span>
@@ -1219,7 +1219,7 @@ export function AdvancedSimulation() {
                       {goalYears} ans
                     </span>
                   </label>
-                  <input type="range" min="1" max="20" value={goalYears} onChange={e => setGoalYears(parseInt(e.target.value))} className="w-full accent-indigo-500" />
+                  <input type="range" min="1" max="20" value={goalYears} onChange={e => setGoalYears(parseInt(e.target.value))} className="w-full accent-indigo-500" aria-label="Horizon du but en années" />
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>1 an</span>
                     <span>10 ans</span>

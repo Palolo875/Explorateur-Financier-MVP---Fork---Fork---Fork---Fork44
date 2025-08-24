@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 // Service for fetching educational content.
 export const USE_MOCK_DATA = true;
 
@@ -32,6 +34,7 @@ export async function fetchEducationContent(query: string = 'personal finance'):
     }));
   } catch (error) {
     console.error('Error fetching education content:', error);
-    throw new Error('Could not fetch education content.');
+    toast.error('Erreur lors de la récupération du contenu éducatif.');
+    return [];
   }
 }

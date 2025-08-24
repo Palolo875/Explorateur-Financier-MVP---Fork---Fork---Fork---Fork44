@@ -1,4 +1,5 @@
 import { parseStringPromise } from 'xml2js';
+import { toast } from 'react-hot-toast';
 
 // Service for fetching economic data like inflation and interest rates.
 export const USE_MOCK_DATA = true;
@@ -37,7 +38,8 @@ export async function fetchInflationData(countryCode: string = 'FRA'): Promise<{
     return inflationData.slice(-10);
   } catch (error) {
     console.error('Error fetching inflation data:', error);
-    throw new Error('Could not fetch inflation data.');
+    toast.error('Erreur lors de la récupération des données sur l\'inflation.');
+    return [];
   }
 }
 
@@ -75,6 +77,7 @@ export async function fetchInterestRates(countryCode: string = 'FR'): Promise<{ 
     return interestRateData;
   } catch (error) {
     console.error('Error fetching interest rate data:', error);
-    throw new Error('Could not fetch interest rate data.');
+    toast.error('Erreur lors de la récupération des taux d\'intérêt.');
+    return [];
   }
 }

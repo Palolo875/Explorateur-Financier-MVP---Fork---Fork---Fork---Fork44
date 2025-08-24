@@ -136,11 +136,11 @@ export function Library() {
           <div className="md:col-span-2">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input type="text" placeholder="Rechercher des ressources..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+              <input type="text" placeholder="Rechercher des ressources..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Rechercher des ressources" />
             </div>
           </div>
           <div>
-            <select value={selectedCategory || ''} onChange={e => setSelectedCategory(e.target.value || null)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
+            <select value={selectedCategory || ''} onChange={e => setSelectedCategory(e.target.value || null)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Filtrer par catégorie">
               <option value="">Toutes les catégories</option>
               {categories.map((category, index) => <option key={index} value={category}>
                   {category}
@@ -148,7 +148,7 @@ export function Library() {
             </select>
           </div>
           <div>
-            <select value={selectedType || ''} onChange={e => setSelectedType(e.target.value || null)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
+            <select value={selectedType || ''} onChange={e => setSelectedType(e.target.value || null)} className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50" aria-label="Filtrer par type">
               <option value="">Tous les types</option>
               {types.map((type, index) => <option key={index} value={type}>
                   {type.charAt(0).toUpperCase() + type.slice(1)}
