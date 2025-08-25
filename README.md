@@ -66,3 +66,27 @@ The application uses Supabase Edge Functions to securely call sensitive APIs.
 *   **`analyzeWithNLP`**: Calls the Google Cloud NLP API for natural language processing tasks.
 
 These functions are written in TypeScript and are located in the `supabase/functions` directory (note: this directory is not part of the current project structure and would need to be created).
+
+## Insights Engine
+
+The application includes an "intelligent" insights engine that analyzes user data to provide personalized financial advice.
+
+### How it works:
+
+1.  **Data Collection**: The engine fetches the user's transactions, goals, and emotional journal entries from Supabase.
+2.  **Behavioral Analysis**: It then analyzes this data to identify patterns and behavioral biases, such as:
+    *   **Status Quo Bias**: Detecting unused recurring subscriptions.
+    *   **Ease Effect**: Identifying spending spikes after a salary deposit.
+    *   **Procrastination**: Noticing when financial goals are not updated.
+    *   **Optimism Bias**: Comparing optimistic forecasts with actual results.
+3.  **Content Generation**: For each insight, the engine:
+    *   Associates it with a recognized cognitive bias.
+    *   Adds a related psychological fact from an internal dataset.
+    *   Fetches a motivational quote from the ZenQuotes API.
+    *   Generates a structured insight object with a message, bias, fact, quote, and recommendation.
+
+### Extensibility:
+
+The insights engine is designed to be extensible. You can easily add new:
+*   **Cognitive Biases and Psychological Facts**: By updating the `src/data/psychology.ts` file.
+*   **Quote and Trivia Sources**: By adding new functions to the `src/services/insights.ts` file and integrating them into the `generateInsights` function in `src/lib/insightsEngine.ts`.
