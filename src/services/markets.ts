@@ -1,9 +1,8 @@
 import { toast } from 'react-hot-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 // Service for fetching financial market data (stocks, crypto).
-export const USE_MOCK_DATA = true;
-
-const ALPHA_VANTAGE_API_KEY = 'DEMO_KEY'; // Replace with a real API key
+export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 export async function fetchStockData(symbol: string): Promise<{ date: string; value: number }[]> {
   if (USE_MOCK_DATA) {
@@ -21,22 +20,15 @@ export async function fetchStockData(symbol: string): Promise<{ date: string; va
   }
 
   try {
-    const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch stock data: ${response.statusText}`);
-    }
-    const data = await response.json();
-    if (data['Error Message']) {
-      throw new Error(data['Error Message']);
+    const { data, error } = await supabase.functions.invoke('getMarketData', {
+      body: { symbol },
+    });
+
+    if (error) {
+      throw error;
     }
 
-    const timeSeries = data['Time Series (Daily)'];
-    const stockData = Object.keys(timeSeries).map(date => ({
-      date,
-      value: parseFloat(timeSeries[date]['4. close']),
-    }));
-
-    return stockData;
+    return data;
   } catch (error) {
     console.error('Error fetching stock data:', error);
     toast.error('Erreur lors de la récupération des données boursières.');
