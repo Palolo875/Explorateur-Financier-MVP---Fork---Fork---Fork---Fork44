@@ -10,6 +10,11 @@ import { ArrowLeftIcon, ArrowRightIcon, BarChart3Icon, TrendingUpIcon, TrendingD
 import { toast, Toaster } from 'react-hot-toast';
 import { FinancialInsight } from '../types/finance';
 import CountUp from 'react-countup';
+import { supabase } from '@/lib/supabaseClient';
+import { generateInsights, calculateRevelationScore } from '@/lib/insightsEngine';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useEmotions } from '@/hooks/useEmotions';
+import { useGoals } from '@/hooks/useGoals';
 // Définition des types pour les sections d'analyse
 interface AnalysisSection {
   id: string;
@@ -17,17 +22,6 @@ interface AnalysisSection {
   icon: React.ReactNode;
   expanded: boolean;
 }
-const MemoizedInsight = memo(({
-  insight
-}: {
-  insight: FinancialInsight;
-}) => <div className={`p-3 rounded-lg ${insight.impact === 'high' ? 'bg-red-900/20 border border-red-500/30' : insight.impact === 'medium' ? 'bg-yellow-900/20 border border-yellow-500/30' : 'bg-green-900/20 border border-green-500/30'}`}>
-    <div className="flex items-center mb-2">
-      <span className={`w-2 h-2 rounded-full mr-2 ${insight.impact === 'high' ? 'bg-red-500' : insight.impact === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
-      <h4 className="font-medium">{insight.title}</h4>
-    </div>
-    <p className="text-sm">{insight.description}</p>
-  </div>);
 export function RevealScreen() {
   const navigate = useNavigate();
   const {
@@ -51,7 +45,8 @@ export function RevealScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [insights, setInsights] = useState<FinancialInsight[]>([]);
+  const [insights, setInsights] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
   const [healthScore, setHealthScore] = useState<number>(0);
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [strengths, setStrengths] = useState<string[]>([]);
@@ -116,22 +111,26 @@ export function RevealScreen() {
     expanded: expandedSections['next-steps']
   }];
   // Charger les données d'analyse au montage
+  const { transactions, loading: transactionsLoading } = useTransactions();
+  const { emotions, loading: emotionsLoading } = useEmotions();
+  const { goals: goalsData, loading: goalsLoading } = useGoals();
+
   useEffect(() => {
     const loadAnalysisData = async () => {
+      if (transactionsLoading || emotionsLoading || goalsLoading) {
+        return;
+      }
       setIsLoading(true);
       setShowAnimation(true);
       try {
         // Simuler un délai de traitement pour l'animation
         await new Promise(resolve => setTimeout(resolve, 2000));
-        // Obtenir les insights financiers
-        const fetchedInsights = await generateInsights();
-        setInsights(fetchedInsights || []);
-        // Obtenir le score de santé financière
-        const health = await getFinancialHealth();
-        setHealthScore(health?.score || 50);
-        setRecommendations(health?.recommendations || []);
-        setStrengths(health?.strengths || []);
-        setWeaknesses(health?.weaknesses || []);
+        // Generate insights and score
+        const newInsights = await generateInsights(transactions, goalsData, emotions);
+        setInsights(newInsights);
+        const newScore = await calculateRevelationScore(transactions, goalsData);
+        setHealthScore(newScore);
+        setGoals(goalsData);
         setShowAnimation(false);
         // Simuler un court délai avant d'afficher les résultats
         setTimeout(() => {
@@ -146,7 +145,7 @@ export function RevealScreen() {
       }
     };
     loadAnalysisData();
-  }, [financialData]);
+  }, [transactions, emotions, goalsData, transactionsLoading, emotionsLoading, goalsLoading]);
   // Basculer l'état d'expansion d'une section
   const toggleSection = (sectionId: string) => {
     setExpandedSections({
@@ -250,16 +249,15 @@ export function RevealScreen() {
       }} transition={{
         duration: 0.5
       }}>
-              {/* Score de santé financière */}
+              {/* Revelation Score */}
               <GlassCard className="p-6 mb-6" animate>
                 <div className="flex flex-col md:flex-row items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-bold mb-2">
-                      Votre santé financière
+                      Votre Score de Révélation
                     </h2>
                     <p className={`text-sm ${themeColors.textSecondary}`}>
-                      Basée sur l'analyse de vos données financières et de votre
-                      contexte émotionnel.
+                      Une mesure de votre bien-être financier global.
                     </p>
                   </div>
                   <div className="mt-4 md:mt-0">
@@ -269,40 +267,12 @@ export function RevealScreen() {
                         <span className="text-lg">/100</span>
                       </div>
                       <div className="text-sm">
-                        {healthScore >= 70 ? 'Excellente' : healthScore >= 50 ? 'Bonne' : healthScore >= 30 ? 'À améliorer' : 'Attention requise'}
+                        {healthScore >= 70 ? 'Excellent' : healthScore >= 50 ? 'Bon' : healthScore >= 30 ? 'À améliorer' : 'Attention requise'}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-black/20 p-4 rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
-                      <h3 className="font-medium">Points forts</h3>
-                    </div>
-                    <ul className="space-y-2">
-                      {strengths.length > 0 ? strengths.map((strength, index) => <li key={index} className="text-sm flex items-start">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 mr-2"></span>
-                            <span>{strength}</span>
-                          </li>) : <li className="text-sm text-gray-400">
-                          Aucun point fort identifié
-                        </li>}
-                    </ul>
-                  </div>
-                  <div className="bg-black/20 p-4 rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <XCircleIcon className="h-5 w-5 text-red-400 mr-2" />
-                      <h3 className="font-medium">Points à améliorer</h3>
-                    </div>
-                    <ul className="space-y-2">
-                      {weaknesses.length > 0 ? weaknesses.map((weakness, index) => <li key={index} className="text-sm flex items-start">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 mr-2"></span>
-                            <span>{weakness}</span>
-                          </li>) : <li className="text-sm text-gray-400">
-                          Aucun point faible identifié
-                        </li>}
-                    </ul>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-black/20 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
                       <InfoIcon className="h-5 w-5 text-blue-400 mr-2" />
@@ -331,6 +301,60 @@ export function RevealScreen() {
                     </ul>
                   </div>
                 </div>
+              </GlassCard>
+
+              {/* Visualizations Section */}
+              <GlassCard className="p-6 mb-6" animate>
+                <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleSection('visualizations')}>
+                  <div className="flex items-center">
+                    <BarChart3Icon className="h-5 w-5 text-yellow-400" />
+                    <h2 className="text-xl font-bold ml-2">Visualisations</h2>
+                  </div>
+                  <button className="p-1 hover:bg-black/20 rounded-full">
+                    {expandedSections['visualizations'] ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+                  </button>
+                </div>
+                <AnimatePresence>
+                  {expandedSections['visualizations'] && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                      <div className="pt-4 mt-4 border-t border-white/10">
+                        <h3 className="font-medium mb-4">Projection de Cashflow</h3>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={[
+                              { name: 'Jan', real: 4000, optimistic: 4200 },
+                              { name: 'Fev', real: 3000, optimistic: 3200 },
+                              { name: 'Mar', real: 2000, optimistic: 2500 },
+                              { name: 'Avr', real: 2780, optimistic: 3000 },
+                              { name: 'Mai', real: 1890, optimistic: 2200 },
+                              { name: 'Juin', real: 2390, optimistic: 2600 },
+                              { name: 'Juil', real: 3490, optimistic: 3800 },
+                            ]}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Line type="monotone" dataKey="real" stroke="#8884d8" name="Réel" />
+                              <Line type="monotone" dataKey="optimistic" stroke="#82ca9d" name="Optimiste" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <h3 className="font-medium my-4">Timeline des Objectifs</h3>
+                        <div className="h-32 overflow-x-auto">
+                          <div className="relative w-full h-full flex items-center">
+                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-700"></div>
+                            {goals.map((goal, index) => (
+                              <div key={goal.id} className="relative z-10 flex flex-col items-center" style={{ left: `${(index / (goals.length - 1)) * 100}%` }}>
+                                <div className="w-4 h-4 bg-indigo-500 rounded-full border-2 border-gray-900"></div>
+                                <p className="text-xs mt-2">{goal.title}</p>
+                                <p className="text-xs text-gray-400">{new Date(goal.deadline).toLocaleDateString()}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>}
+                </AnimatePresence>
               </GlassCard>
 
               {/* Sections d'analyse */}
@@ -362,7 +386,16 @@ export function RevealScreen() {
                         <div className="pt-4 mt-4 border-t border-white/10">
                           {/* Contenu des insights financiers */}
                           {section.id === 'insights' && <div className="space-y-4">
-                              {insights.length > 0 ? insights.map(insight => <MemoizedInsight key={insight.id} insight={insight} />) : <div className="text-center py-6 text-gray-400">
+                              {insights.length > 0 ? insights.map((insight, index) => (
+                                <div key={index} className="bg-black/20 p-4 rounded-lg">
+                                  <h4 className="font-medium mb-2">{insight.message}</h4>
+                                  {insight.bias && <p className="text-sm text-gray-400 mb-1">Biais: {insight.bias}</p>}
+                                  {insight.fact && <p className="text-sm text-gray-400 mb-1">Fait: {insight.fact}</p>}
+                                  {insight.quote && <p className="text-sm text-gray-400 mb-1">Quote: {insight.quote}</p>}
+                                  {insight.recommendation && <p className="text-sm text-green-400 mb-1">Recommendation: {insight.recommendation}</p>}
+                                  {insight.trivia && <p className="text-sm text-blue-400 mb-1">Trivia: {insight.trivia}</p>}
+                                </div>
+                              )) : <div className="text-center py-6 text-gray-400">
                                   <p>Aucun insight financier disponible</p>
                                   <p className="text-sm mt-1">
                                     Ajoutez plus de données financières pour

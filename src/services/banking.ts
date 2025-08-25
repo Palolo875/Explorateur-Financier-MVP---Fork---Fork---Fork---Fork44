@@ -1,11 +1,8 @@
 import { toast } from 'react-hot-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 // Service for open banking integration (e.g., Plaid).
-export const USE_MOCK_DATA = true;
-
-const PLAID_CLIENT_ID = 'YOUR_CLIENT_ID';
-const PLAID_SECRET = 'YOUR_SECRET';
-const PLAID_ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN';
+export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 export interface Transaction {
   transaction_id: string;
@@ -27,32 +24,13 @@ export async function fetchTransactions(): Promise<Transaction[]> {
   }
 
   try {
-    const response = await fetch('https://sandbox.plaid.com/transactions/get', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: PLAID_CLIENT_ID,
-        secret: PLAID_SECRET,
-        access_token: PLAID_ACCESS_TOKEN,
-        start_date: '2023-01-01',
-        end_date: '2023-10-26',
-      }),
-    });
+    const { data, error } = await supabase.functions.invoke('getPlaidTransactions');
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+    if (error) {
+      throw error;
     }
 
-    const data = await response.json();
-    return data.transactions.map((t: any) => ({
-      transaction_id: t.transaction_id,
-      name: t.name,
-      amount: t.amount,
-      date: t.date,
-      category: t.category,
-    }));
+    return data;
   } catch (error) {
     console.error('Error fetching transactions:', error);
     toast.error('Erreur lors de la récupération des transactions.');
