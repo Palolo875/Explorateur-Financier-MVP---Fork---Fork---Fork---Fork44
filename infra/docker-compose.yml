@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports: ["5432:5432"]
+    volumes: [db_data:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  api:
+    build: ../backend
+    depends_on: [db, redis]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/app
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: change-me
+      ALPHAVANTAGE_KEY: ""
+      PLAID_CLIENT_ID: ""
+      PLAID_SECRET: ""
+    ports: ["3000:3000"]
+    command: ["sh","-c","npx prisma migrate deploy && node dist/main.js"]
+    volumes:
+      - ../backend:/usr/src/app
+      - /usr/src/app/node_modules
+volumes:
+  db_data:
