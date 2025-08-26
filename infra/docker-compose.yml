@@ -21,7 +21,8 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/app
       REDIS_URL: redis://redis:6379
       JWT_SECRET: change-me
-      ALPHAVANTAGE_KEY: ""
+      ALPHA_VANTAGE_KEY: ""
+      NLP_CLOUD_API_KEY: ""
       PLAID_CLIENT_ID: ""
       PLAID_SECRET: ""
     ports: ["3000:3000"]
