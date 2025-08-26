@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../common/prisma.module';
 import { MetricsService } from '../../common/metrics/metrics.service';
+import fetch from 'node-fetch';
 
 @ApiTags('Health')
 @Controller('health')
@@ -63,5 +64,37 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Metrics in Prometheus format' })
   async metrics() {
     return this.metricsService.getMetrics();
+  }
+
+  @Public()
+  @Get('external')
+  @ApiOperation({ summary: 'External APIs connectivity check' })
+  @ApiResponse({ status: 200, description: 'External APIs status' })
+  async external() {
+    const alphaKey = process.env.ALPHA_VANTAGE_KEY;
+    const nlpKeyPresent = Boolean(process.env.NLP_CLOUD_API_KEY);
+
+    let alphaStatus = 'not_configured';
+    let alphaError: string | undefined;
+
+    if (alphaKey) {
+      try {
+        const res = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&apikey=${alphaKey}&limit=1`, { timeout: 8000 } as any);
+        if (res.ok) {
+          alphaStatus = 'ok';
+        } else {
+          alphaStatus = 'error';
+          alphaError = `HTTP ${res.status}`;
+        }
+      } catch (e: any) {
+        alphaStatus = 'error';
+        alphaError = e.message;
+      }
+    }
+
+    return {
+      alphaVantage: { configured: Boolean(alphaKey), status: alphaStatus, error: alphaError },
+      nlpCloud: { configured: nlpKeyPresent, note: 'No runtime call here; service checks handle this.' }
+    };
   }
 }

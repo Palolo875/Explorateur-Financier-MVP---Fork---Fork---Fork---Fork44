@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import fetch from 'node-fetch';
+import { NlpCloudService } from './nlp-cloud.service';
 
 export interface QuoteData {
   text: string;
@@ -31,6 +32,8 @@ export class ExternalApisService {
   private sentimentCache = new Map<string, { data: MarketSentiment; timestamp: number }>();
 
   private readonly CACHE_DURATION = 3600000; // 1 heure
+
+  constructor(private readonly nlpCloudService: NlpCloudService) {}
 
   /**
    * Récupère une citation motivante depuis ZenQuotes API (gratuite)
@@ -112,6 +115,12 @@ export class ExternalApisService {
       // Alpha Vantage API gratuite (5 requêtes/minute)
       const apiKey = process.env.ALPHA_VANTAGE_KEY;
       if (!apiKey) {
+        // Fallback NLP Cloud si configuré
+        const nlp = await this.getNlpFallbackSentiment();
+        if (nlp) {
+          this.sentimentCache.set(cacheKey, { data: nlp, timestamp: Date.now() });
+          return nlp;
+        }
         return this.getFallbackSentiment();
       }
 
@@ -133,6 +142,12 @@ export class ExternalApisService {
       }
     } catch (error) {
       this.logger.warn(`Failed to fetch market sentiment: ${error.message}`);
+      // Fallback NLP Cloud si possible
+      const nlp = await this.getNlpFallbackSentiment();
+      if (nlp) {
+        this.sentimentCache.set(cacheKey, { data: nlp, timestamp: Date.now() });
+        return nlp;
+      }
     }
 
     return this.getFallbackSentiment();
@@ -371,5 +386,17 @@ export class ExternalApisService {
 
   private async getGDPGrowth(): Promise<{ rate: number; trend: string }> {
     return { rate: 1.8, trend: 'stable' };
+  }
+
+  private async getNlpFallbackSentiment(): Promise<MarketSentiment | null> {
+    const sampleText = 'Les marchés financiers montrent des signes mixtes avec des hausses dans la tech et des baisses dans l\'énergie.';
+    const result = await this.nlpCloudService.analyzeSentiment(sampleText);
+    if (!result) return null;
+    return {
+      sentiment: result.sentiment,
+      confidence: Math.round(result.confidence * 100),
+      summary: 'Sentiment de marché (NLP Cloud)',
+      recommendation: result.sentiment === 'positive' ? 'Conserver et surveiller' : result.sentiment === 'negative' ? 'Prudence, limiter les expositions risquées' : 'Attente et observation'
+    };
   }
 }
