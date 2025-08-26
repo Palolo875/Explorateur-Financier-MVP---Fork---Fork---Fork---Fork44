@@ -11,6 +11,7 @@ import { GoalsModule } from './modules/goals/goals.module';
 import { EmotionsModule } from './modules/emotions/emotions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { HealthModule } from './modules/health/health.module';
+import { InsightsModule } from './modules/insights/insights.module';
 import { JwtAuthGuard } from './modules/auth/jwt.guard';
 import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard';
 import databaseConfig from './common/config/database.config';
@@ -49,6 +50,7 @@ import jwtConfig from './common/config/jwt.config';
     EmotionsModule,
     NotificationsModule,
     HealthModule,
+    InsightsModule,
   ],
   providers: [
     {
