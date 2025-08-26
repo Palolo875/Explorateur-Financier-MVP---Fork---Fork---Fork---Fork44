@@ -1,12 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../common/prisma.module';
+import { MetricsService } from '../../common/metrics/metrics.service';
 
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private metricsService: MetricsService,
+  ) {}
 
   @Public()
   @Get()
@@ -50,5 +54,14 @@ export class HealthController {
     } catch (error) {
       throw new Error('Database not ready');
     }
+  }
+
+  @Public()
+  @Get('metrics')
+  @Header('Content-Type', 'text/plain')
+  @ApiOperation({ summary: 'Prometheus metrics endpoint' })
+  @ApiResponse({ status: 200, description: 'Metrics in Prometheus format' })
+  async metrics() {
+    return this.metricsService.getMetrics();
   }
 }
