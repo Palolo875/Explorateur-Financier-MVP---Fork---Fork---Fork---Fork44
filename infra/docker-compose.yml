@@ -23,6 +23,7 @@ services:
       JWT_SECRET: change-me
       ALPHA_VANTAGE_KEY: ""
       NLP_CLOUD_API_KEY: ""
+      NEWS_API_KEY: ""
       PLAID_CLIENT_ID: ""
       PLAID_SECRET: ""
     ports: ["3000:3000"]

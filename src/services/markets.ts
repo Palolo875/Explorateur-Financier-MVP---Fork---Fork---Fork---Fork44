@@ -19,6 +19,7 @@ export async function fetchStockData(symbol: string): Promise<{ date: string; va
     return data;
   }
 
+  // First try Supabase Edge Function if available
   try {
     const { data, error } = await supabase.functions.invoke('getMarketData', {
       body: { symbol },
@@ -28,9 +29,38 @@ export async function fetchStockData(symbol: string): Promise<{ date: string; va
       throw error;
     }
 
-    return data;
+    if (Array.isArray(data) && data.length > 0) {
+      return data;
+    }
   } catch (error) {
-    console.error('Error fetching stock data:', error);
+    console.warn('Supabase function getMarketData not available or failed. Falling back to direct API.', error);
+  }
+
+  // Fallback: Direct Alpha Vantage TIME_SERIES_DAILY (requires client-side key; rate-limited)
+  try {
+    const apiKey = (import.meta as any).env?.VITE_ALPHA_VANTAGE_API_KEY;
+    if (!apiKey) {
+      throw new Error('Missing VITE_ALPHA_VANTAGE_API_KEY');
+    }
+    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}&outputsize=compact`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch stock data: ${response.statusText}`);
+    }
+    const json = await response.json();
+
+    const series = json['Time Series (Daily)'] || {};
+    const result = Object.keys(series)
+      .slice(0, 30)
+      .map((date) => ({
+        date,
+        value: Number(series[date]['4. close']) || 0,
+      }))
+      .reverse();
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching stock data (fallback):', error);
     toast.error('Erreur lors de la récupération des données boursières.');
     return [];
   }
