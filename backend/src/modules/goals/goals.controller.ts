@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Put, Delete, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Delete, Param, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto, UpdateGoalDto } from './dto/goal.dto';
 import { CurrentUser } from '../../common/decorators/user.decorator';
+import { CacheKey } from '../../common/decorators/cache-key.decorator';
+import { HttpCacheInterceptor } from '../../common/interceptors/cache.interceptor';
 
 @ApiTags('Goals')
 @ApiBearerAuth()
@@ -11,6 +13,8 @@ export class GoalsController {
   constructor(private goalsService: GoalsService) {}
 
   @Get()
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('goals')
   @ApiOperation({ summary: 'Get all user goals' })
   @ApiResponse({ status: 200, description: 'List of user goals' })
   async getAll(@CurrentUser('id') userId: string) {
