@@ -1,28 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../common/prisma.module';
 
 @Injectable()
 export class EmotionsService {
-  async getAll(userId: number) {
-    return prisma.emotion.findMany({ where: { userId } });
-  }
+  constructor(private prisma: PrismaService) {}
 
-  async create(userId: number, data: { mood: string; note?: string }) {
-    return prisma.emotion.create({
-      data: { ...data, userId },
+  async getAll(userId: string) {
+    return this.prisma.emotion.findMany({
+      where: { userId },
+      orderBy: { date: 'desc' },
     });
   }
 
-  async update(id: number, data: { mood?: string; note?: string }) {
-    return prisma.emotion.update({
+  async getById(id: string, userId: string) {
+    const emotion = await this.prisma.emotion.findUnique({
+      where: { id },
+    });
+
+    if (!emotion) {
+      throw new NotFoundException('Emotion entry not found');
+    }
+
+    if (emotion.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return emotion;
+  }
+
+  async create(userId: string, data: { mood: string; note?: string; date?: Date }) {
+    return this.prisma.emotion.create({
+      data: {
+        ...data,
+        userId,
+        date: data.date || new Date(),
+      },
+    });
+  }
+
+  async update(id: string, userId: string, data: { mood?: string; note?: string }) {
+    await this.getById(id, userId); // Vérifie l'existence et les permissions
+
+    return this.prisma.emotion.update({
       where: { id },
       data,
     });
   }
 
-  async delete(id: number) {
-    return prisma.emotion.delete({ where: { id } });
+  async delete(id: string, userId: string) {
+    await this.getById(id, userId); // Vérifie l'existence et les permissions
+
+    return this.prisma.emotion.delete({ where: { id } });
   }
 }

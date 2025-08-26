@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../../common/prisma.module';
 import { CreateTransactionDto } from './dto/transaction.dto';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaService) {}
 
   list(userId: string, from?: string, to?: string, category?: string) {
     return this.prisma.transaction.findMany({
