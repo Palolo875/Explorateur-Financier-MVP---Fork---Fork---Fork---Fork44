@@ -54,57 +54,8 @@ export interface RevelationScore {
 export class InsightsService {
   private readonly logger = new Logger(InsightsService.name);
   
-  // Base de données des biais cognitifs
-  private readonly cognitiveBiases: Record<string, CognitiveBias> = {
-    status_quo: {
-      name: 'Biais du statu quo',
-      type: 'planning',
-      description: 'Tendance à maintenir des habitudes coûteuses par inertie',
-      psychologicalFact: 'Notre cerveau préfère éviter les décisions difficiles, même si elles nous coûtent de l\'argent',
-      severity: 'medium',
-      recommendation: 'Planifiez une révision mensuelle de vos abonnements et dépenses récurrentes'
-    },
-    availability_heuristic: {
-      name: 'Heuristique de disponibilité',
-      type: 'spending',
-      description: 'Surestimation des dépenses récentes et marquantes',
-      psychologicalFact: 'Nous jugeons la probabilité d\'un événement par la facilité avec laquelle nous pouvons nous en souvenir',
-      severity: 'low',
-      recommendation: 'Utilisez des moyennes sur 3 mois plutôt que les dernières dépenses pour budgéter'
-    },
-    optimism_bias: {
-      name: 'Biais d\'optimisme',
-      type: 'planning',
-      description: 'Surestimation systématique de vos revenus futurs',
-      psychologicalFact: '80% des gens pensent être au-dessus de la moyenne en matière financière',
-      severity: 'high',
-      recommendation: 'Basez vos objectifs sur vos performances passées, pas sur vos espoirs'
-    },
-    mental_accounting: {
-      name: 'Comptabilité mentale',
-      type: 'spending',
-      description: 'Traitement différent de l\'argent selon sa source',
-      psychologicalFact: 'Nous dépensons plus facilement l\'argent "bonus" que notre salaire régulier',
-      severity: 'medium',
-      recommendation: 'Traitez tous vos revenus de la même manière dans votre budget'
-    },
-    loss_aversion: {
-      name: 'Aversion aux pertes',
-      type: 'emotional',
-      description: 'Peur excessive de perdre de l\'argent qui bloque les investissements',
-      psychologicalFact: 'La douleur de perdre 100€ est 2x plus intense que le plaisir d\'en gagner 100€',
-      severity: 'medium',
-      recommendation: 'Concentrez-vous sur les gains à long terme plutôt que les pertes à court terme'
-    },
-    present_bias: {
-      name: 'Biais du présent',
-      type: 'saving',
-      description: 'Préférence excessive pour les récompenses immédiates',
-      psychologicalFact: 'Notre cerveau évalue les récompenses futures 50% moins que les récompenses immédiates',
-      severity: 'high',
-      recommendation: 'Automatisez vos épargnes pour contourner la tentation de dépenser'
-    }
-  };
+  // TODO: Move cognitive biases to a database table or a configuration file.
+  private readonly cognitiveBiases: Record<string, CognitiveBias> = {};
 
   constructor(private prisma: PrismaService) {}
 

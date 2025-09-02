@@ -50,17 +50,17 @@ const FinanceContext = createContext<FinanceContextType>({
   emotionalContext: defaultEmotionalContext,
   setEmotionalContext: () => {},
   generateInsights: async () => [],
-  runSimulation: async () => {},
+  runSimulation: async () => ({} as GoalSimulation),
   getFinancialHealth: async () => ({
-    score: 50,
+    score: 0,
     recommendations: [],
     strengths: [],
     weaknesses: []
   }),
   detectHiddenFees: async () => [],
   getHistoricalData: async () => [],
-  getPredictions: async () => [],
-  getFinancialScore: () => 50,
+  getPredictions: async () => (null),
+  getFinancialScore: () => 0,
   calculateTotalIncome: () => 0,
   calculateTotalExpenses: () => 0,
   calculateNetWorth: () => 0,
@@ -135,161 +135,43 @@ export function FinanceProvider({
     return totalAssets - totalLiabilities;
   };
   const generateInsights = async (): Promise<FinancialInsight[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-    const insights: FinancialInsight[] = [];
-    const totalIncome = calculateTotalIncome();
-    const totalExpenses = calculateTotalExpenses();
-    // Insight 1: Savings rate
-    const savingsRate = totalIncome > 0 ? (totalIncome - totalExpenses) / totalIncome * 100 : 0;
-    if (savingsRate < 10) {
-      insights.push({
-        id: 'insight-savings-rate-low',
-        title: "Taux d'épargne faible",
-        description: `Votre taux d'épargne est de ${savingsRate.toFixed(1)}%. Essayez de l'augmenter à au moins 15-20% pour accélérer l'atteinte de vos objectifs.`,
-        category: 'Épargne',
-        impact: 'high',
-        action: "Augmenter l'épargne"
-      });
-    } else if (savingsRate > 20) {
-      insights.push({
-        id: 'insight-savings-rate-high',
-        title: "Excellent taux d'épargne",
-        description: `Félicitations ! Votre taux d'épargne de ${savingsRate.toFixed(1)}% est excellent et vous met sur la bonne voie pour votre avenir financier.`,
-        category: 'Épargne',
-        impact: 'low',
-        action: "Maintenir l'épargne"
-      });
-    }
-    // Insight 2: Emergency fund
-    const emergencyFund = calculateTotalSavings();
-    const monthlyExpenses = totalExpenses;
-    if (monthlyExpenses > 0) {
-      const monthsOfCoverage = emergencyFund / monthlyExpenses;
-      if (monthsOfCoverage < 3) {
-        insights.push({
-          id: 'insight-emergency-fund-low',
-          title: "Fonds d'urgence insuffisant",
-          description: `Votre fonds d'urgence de ${emergencyFund.toLocaleString('fr-FR')}€ couvre moins de 3 mois de dépenses. Visez 3 à 6 mois pour plus de sécurité.`,
-          category: 'Épargne',
-          impact: 'high',
-          action: "Constituer un fonds d'urgence"
-        });
-      }
-    }
-    // Insight 3: High spending category
-    if (safeFinancialData.expenses.length > 0) {
-      const highSpendingCategory = safeFinancialData.expenses.reduce((max, expense) => parseFloat(expense.value as string) > parseFloat(max.value as string) ? expense : max, safeFinancialData.expenses[0]);
-      if (totalExpenses > 0 && parseFloat(highSpendingCategory.value as string) / totalExpenses > 0.3) {
-        insights.push({
-          id: 'insight-high-spending',
-          title: `Dépense élevée en ${highSpendingCategory.category}`,
-          description: `Votre catégorie "${highSpendingCategory.category}" représente plus de 30% de vos dépenses totales. Cherchez des moyens de réduire ces coûts.`,
-          category: 'Dépenses',
-          impact: 'medium',
-          action: 'Analyser les dépenses'
-        });
-      }
-    }
-    return insights.length > 0 ? insights : [{
-      id: 'no-insights',
-      title: 'Tout semble en ordre',
-      description: "Nous n'avons pas trouvé d'opportunités d'amélioration évidentes. Continuez comme ça !",
-      category: 'Général',
-      impact: 'low',
-      action: 'Continuer'
-    }];
+    // TODO: Connect to real API
+    return [];
   };
   const getFinancialHealth = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-    const totalIncome = calculateTotalIncome();
-    const totalExpenses = calculateTotalExpenses();
-    const totalSavings = calculateTotalSavings();
-    const totalDebts = calculateTotalDebts();
-    const netWorth = calculateNetWorth();
-    let score = 0;
-    const recommendations: string[] = [];
-    const strengths: string[] = [];
-    const weaknesses: string[] = [];
-    // Scoring logic (out of 100)
-    // 1. Savings rate (30 pts)
-    const savingsRate = totalIncome > 0 ? (totalIncome - totalExpenses) / totalIncome : 0;
-    if (savingsRate >= 0.2) {
-      score += 30;
-      strengths.push("Taux d'épargne élevé (plus de 20%).");
-    } else if (savingsRate >= 0.1) {
-      score += 15;
-      strengths.push("Taux d'épargne correct (plus de 10%).");
-    } else {
-      weaknesses.push("Taux d'épargne faible (moins de 10%).");
-      recommendations.push("Essayez d'augmenter votre taux d'épargne à au moins 15%.");
-    }
-    // 2. Emergency fund (25 pts)
-    const monthlyExpenses = totalExpenses;
-    if (monthlyExpenses > 0) {
-      const monthsOfCoverage = totalSavings / monthlyExpenses;
-      if (monthsOfCoverage >= 6) {
-        score += 25;
-        strengths.push("Fonds d'urgence solide (plus de 6 mois de dépenses).");
-      } else if (monthsOfCoverage >= 3) {
-        score += 15;
-        strengths.push("Fonds d'urgence en place (plus de 3 mois de dépenses).");
-      } else {
-        weaknesses.push("Fonds d'urgence insuffisant (moins de 3 mois de dépenses).");
-        recommendations.push("Constituez un fonds d'urgence couvrant 3 à 6 mois de vos dépenses.");
-      }
-    } else {
-      score += 25; // No expenses, so emergency fund is theoretically infinite
-      strengths.push('Aucune dépense, situation financière très saine.');
-    }
-    // 3. Debt-to-income ratio (25 pts)
-    if (totalIncome > 0) {
-      const debtToIncomeRatio = totalDebts / (totalIncome * 12);
-      if (debtToIncomeRatio <= 0.1) {
-        score += 25;
-        strengths.push('Faible endettement.');
-      } else if (debtToIncomeRatio <= 0.36) {
-        score += 15;
-        strengths.push('Endettement maîtrisé.');
-      } else {
-        weaknesses.push("Ratio d'endettement élevé.");
-        recommendations.push("Réduisez votre ratio d'endettement en remboursant vos dettes.");
-      }
-    } else if (totalDebts === 0) {
-      score += 25;
-      strengths.push('Aucune dette.');
-    } else {
-      weaknesses.push('Dettes sans revenus pour les couvrir.');
-      recommendations.push('Trouvez des sources de revenus pour rembourser vos dettes.');
-    }
-    // 4. Net worth (20 pts)
-    if (netWorth > 50000) {
-      score += 20;
-      strengths.push('Patrimoine net bien développé.');
-    } else if (netWorth > 0) {
-      score += 10;
-      strengths.push('Patrimoine net positif.');
-    } else {
-      weaknesses.push('Patrimoine net négatif.');
-      recommendations.push('Travaillez à augmenter votre patrimoine net en épargnant et investissant.');
-    }
+    // TODO: Connect to real API
     return {
-      score: Math.round(score),
-      recommendations,
-      strengths,
-      weaknesses
+      score: 0,
+      recommendations: [],
+      strengths: [],
+      weaknesses: []
     };
   };
   const runSimulation = async (params: Simulation): Promise<GoalSimulation> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // This can remain a client-side calculation
     return runSimulationUtil(safeFinancialData, params);
   };
   // Mock functions for other finance operations
-  const detectHiddenFees = async () => [];
-  const getHistoricalData = async () => [];
-  const getPredictions = async () => [];
-  const getFinancialScore = () => 75;
-  const refreshData = async () => {};
+  const detectHiddenFees = async () => {
+    // TODO: Connect to real API
+    return [];
+  }
+  const getHistoricalData = async () => {
+    // TODO: Connect to real API
+    return [];
+  }
+  const getPredictions = async () => {
+    // TODO: Connect to real API
+    return null;
+  }
+  const getFinancialScore = () => {
+    // TODO: Connect to real API
+    return 0;
+  }
+  const refreshData = async () => {
+    // TODO: Implement data refresh logic
+  };
+
   return <FinanceContext.Provider value={{
     userQuestion,
     setUserQuestion,

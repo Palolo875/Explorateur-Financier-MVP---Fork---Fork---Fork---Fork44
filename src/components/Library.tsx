@@ -17,7 +17,7 @@ interface Resource {
   date: string;
   featured?: boolean;
   tags: string[];
-  rating: number; // 1-5
+  rating?: number; // 1-5
 }
 export function Library() {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export function Library() {
           date: resource.first_publish_year.toString(),
           featured: index < 3,
           tags: ['livre', 'finance'],
-          rating: 4.5, // Placeholder
+          // rating: 4.5, // Placeholder
         }));
         setResources(resourcesData);
       } catch (error) {
