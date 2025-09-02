@@ -57,54 +57,12 @@ export function EmotionalJournal() {
   });
   const [showChart, setShowChart] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  // Available tags
-  const availableTags = ['Travail', 'Famille', 'Santé', 'Budget', 'Épargne', 'Investissement', 'Dette', 'Stress', 'Confiance', 'Inquiétude', 'Optimisme', 'Décision'];
-  // Generate mock journal entries on component mount
+  // TODO: Fetch available tags from API
+  const availableTags: string[] = [];
+  // Fetch journal entries on component mount
   useEffect(() => {
-    const generateMockEntries = () => {
-      const mockEntries: JournalEntry[] = [];
-      // Create entries for the last 30 days
-      for (let i = 30; i >= 0; i -= 2) {
-        const date = subDays(new Date(), i);
-        const dateStr = format(date, 'yyyy-MM-dd');
-        // Generate random mood and tags
-        const mood = Math.floor(Math.random() * 10) + 1;
-        const tags = [];
-        const tagCount = Math.floor(Math.random() * 3) + 1;
-        for (let j = 0; j < tagCount; j++) {
-          const randomTag = availableTags[Math.floor(Math.random() * availableTags.length)];
-          if (!tags.includes(randomTag)) {
-            tags.push(randomTag);
-          }
-        }
-        // Generate entry text based on mood
-        let text = '';
-        if (mood > 7) {
-          text = "Aujourd'hui je me sens stressé(e) par rapport à mes finances. J'ai des inquiétudes concernant mes dépenses récentes et je me demande si je pourrai atteindre mes objectifs d'épargne.";
-        } else if (mood > 4) {
-          text = "Je me sens plutôt neutre aujourd'hui concernant ma situation financière. J'ai fait quelques dépenses mais rien d'excessif.";
-        } else {
-          text = "Je me sens très confiant(e) aujourd'hui ! J'ai réussi à mettre de côté une bonne partie de mon revenu et je vois des progrès vers mes objectifs financiers.";
-        }
-        // Add financial context
-        const financialContext = {
-          income: Math.random() * 1000 + 1500,
-          expenses: Math.random() * 800 + 700,
-          balance: 0
-        };
-        financialContext.balance = financialContext.income - financialContext.expenses;
-        mockEntries.push({
-          id: `entry-${i}`,
-          date: dateStr,
-          mood,
-          tags,
-          text,
-          financialContext
-        });
-      }
-      return mockEntries;
-    };
-    setEntries(generateMockEntries());
+    // TODO: Connect to real API to fetch journal entries
+    setEntries([]);
   }, []);
   // Filter entries when search term, tags, or date range changes
   useEffect(() => {
