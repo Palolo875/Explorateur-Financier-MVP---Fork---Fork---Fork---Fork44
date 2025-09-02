@@ -14,6 +14,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import CountUp from 'react-countup';
 import { fetchStockData, fetchCryptoData } from '../services/markets';
 import { fetchTransactions, Transaction } from '../services/banking';
+import CsvImporter from './data/CsvImporter';
 // Type for dashboard notification
 interface DashboardNotification {
   id: string;
@@ -437,6 +438,12 @@ export function Dashboard() {
           <div className={`text-xs ${themeColors?.textSecondary || 'text-gray-400'}`}>
             {netWorth >= 0 ? 'Patrimoine positif' : 'Patrimoine négatif'}
           </div>
+        </GlassCard>
+      </div>
+      {/* CSV Importer */}
+      <div className="mb-6">
+        <GlassCard className="p-4" animate>
+          <CsvImporter />
         </GlassCard>
       </div>
       {/* Main dashboard content */}
