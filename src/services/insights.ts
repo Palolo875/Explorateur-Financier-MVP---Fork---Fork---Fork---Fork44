@@ -1,3 +1,4 @@
+import { supabase } from '../lib/supabaseClient';
 import { toast } from 'react-hot-toast';
 
 export async function fetchZenQuote(): Promise<string> {
@@ -41,3 +42,24 @@ export async function fetchNumberTrivia(): Promise<string> {
     return '';
   }
 }
+
+export const saveAnonymousInsight = async (userId: string, insightData: any) => {
+  const { data, error } = await supabase
+    .from('financial_insights')
+    .insert([
+      {
+        user_id: userId,
+        insight: insightData,
+      }
+    ])
+    .select();
+
+  if (error) {
+    console.error('Error saving insight:', error);
+    toast.error('Erreur lors de la sauvegarde des données.');
+    return null;
+  }
+
+  toast.success('Données sauvegardées avec succès !');
+  return data;
+};
