@@ -1,5 +1,5 @@
 import { FinancialData, EmotionalContext, FinancialInsight, Simulation, GoalSimulation } from '../types/finance';
-import dayjs from 'dayjs';
+
 // Generate personalized financial insights based on user data
 export function calculateFinancialInsights(financialData: FinancialData, emotionalContext: EmotionalContext, totalIncome: number, totalExpenses: number): FinancialInsight[] {
   const insights: FinancialInsight[] = [];
@@ -193,7 +193,7 @@ export function formatCurrency(amount: number, currency = 'EUR') {
   }).format(amount);
 }
 // Calculate compound interest
-export function calculateCompoundInterest(principal: number, rate: number, years: number, contributions: number = 0, frequency: 'monthly' | 'yearly' = 'monthly') {
+export function calculateCompoundInterest(principal: number, rate: number, years: number, contributions = 0, frequency: 'monthly' | 'yearly' = 'monthly') {
   const periodicRate = rate / 100 / (frequency === 'monthly' ? 12 : 1);
   const periods = years * (frequency === 'monthly' ? 12 : 1);
   let balance = principal;

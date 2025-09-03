@@ -186,7 +186,7 @@ async function main() {
         });
         break;
 
-      case 'list':
+      case 'list': {
         const backups = await backup.listBackups();
         console.log('\n📋 Sauvegardes disponibles:');
         if (backups.length === 0) {
@@ -198,13 +198,15 @@ async function main() {
           });
         }
         break;
+      }
 
-      case 'cleanup':
+      case 'cleanup': {
         const keepCount = parseInt(args[1]) || 5;
         await backup.cleanupOldBackups(undefined, keepCount);
         break;
+      }
 
-      case 'restore':
+      case 'restore': {
         const backupPath = args[1];
         if (!backupPath) {
           console.error('❌ Chemin de sauvegarde requis pour la restauration');
@@ -212,6 +214,7 @@ async function main() {
         }
         await backup.restoreBackup(backupPath);
         break;
+      }
 
       default:
         console.log(`

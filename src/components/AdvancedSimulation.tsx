@@ -1,10 +1,10 @@
-import React, { useEffect, useState, createElement } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GlassCard } from './ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useFinance } from '../context/FinanceContext';
-import { LineChartIcon, SaveIcon, PlusIcon, TrashIcon, DownloadIcon, RefreshCwIcon, BarChart3Icon, CopyIcon, CheckIcon, AlertCircleIcon, InfoIcon, DollarSignIcon, PercentIcon, CalendarIcon, ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, HomeIcon, GraduationCapIcon, HeartIcon, CarIcon, BriefcaseIcon, ShareIcon, LockIcon, UnlockIcon, ChevronRightIcon, SettingsIcon, TargetIcon, CheckCircleIcon, BellRingIcon } from 'lucide-react';
+import { LineChartIcon, SaveIcon, PlusIcon, TrashIcon, RefreshCwIcon, BarChart3Icon, CopyIcon, CheckIcon, AlertCircleIcon, InfoIcon, CalendarIcon, ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, HomeIcon, GraduationCapIcon, HeartIcon, BriefcaseIcon, ShareIcon, LockIcon, UnlockIcon, ChevronRightIcon, SettingsIcon, TargetIcon, CheckCircleIcon, BellRingIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ReferenceLine } from 'recharts';
 import { SimulationParams, SimulationResult } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
@@ -35,7 +35,6 @@ interface ScenarioComparison {
 export function AdvancedSimulation() {
   const navigate = useNavigate();
   const {
-    theme,
     themeColors
   } = useTheme();
   const {
@@ -584,22 +583,8 @@ export function AdvancedSimulation() {
       </ResponsiveContainer>;
   };
   const comparisonData = prepareComparisonData();
-  const scenarioData = prepareScenarioData();
   // Chart colors
   const COLORS = themeColors.chartColors;
-  // Guard clause for chart rendering
-  const renderChart = (data: any[]) => {
-    if (!data || data.length === 0) {
-      return <div className="h-full flex items-center justify-center">
-          <p className={`text-sm ${themeColors.textSecondary}`}>
-            Aucune donnée disponible
-          </p>
-        </div>;
-    }
-    return <ResponsiveContainer width="100%" height="100%">
-        {/* ... existing chart code ... */}
-      </ResponsiveContainer>;
-  };
   return <div className="w-full max-w-6xl mx-auto pb-20">
       <Toaster position="top-right" />
       {/* Header */}

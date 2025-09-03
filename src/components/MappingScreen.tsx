@@ -428,7 +428,7 @@ export function MappingScreen() {
       }
 
       // Vérifier que l'onglet existe dans les données
-      if (!financialData.hasOwnProperty(activeTab)) {
+      if (!(activeTab in financialData)) {
         console.error(`L'onglet ${activeTab} n'existe pas dans financialData:`, Object.keys(financialData));
         toast.error('Erreur: catégorie financière non trouvée');
         return;

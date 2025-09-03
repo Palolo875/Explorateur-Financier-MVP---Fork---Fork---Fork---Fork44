@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 // Service for fetching economic data like inflation and interest rates.
 export const USE_MOCK_DATA = true;
 
-export async function fetchInflationData(countryCode: string = 'FRA'): Promise<{ year: number; value: number }[]> {
+export async function fetchInflationData(countryCode = 'FRA'): Promise<{ year: number; value: number }[]> {
   if (USE_MOCK_DATA) {
     return [
       { year: 2013, value: 0.9 },
@@ -43,7 +43,7 @@ export async function fetchInflationData(countryCode: string = 'FRA'): Promise<{
   }
 }
 
-export async function fetchInterestRates(countryCode: string = 'FR'): Promise<{ year: number; value: number }[]> {
+export async function fetchInterestRates(countryCode = 'FR'): Promise<{ year: number; value: number }[]> {
   if (USE_MOCK_DATA) {
     return [
       { year: 2013, value: 0.11 },

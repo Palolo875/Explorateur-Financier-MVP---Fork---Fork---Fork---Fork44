@@ -120,7 +120,7 @@ export function DataImportModal({
           if (values.length >= Math.max(descriptionIndex, amountIndex) + 1) {
             const transaction: ParsedTransaction = {
               description: values[descriptionIndex],
-              amount: values[amountIndex].replace(/[^\d.,\-]/g, '').replace(',', '.')
+              amount: values[amountIndex].replace(/[^\d.,-]/g, '').replace(',', '.')
             };
             if (dateIndex !== -1 && values[dateIndex]) {
               transaction.date = values[dateIndex];
@@ -188,7 +188,7 @@ export function DataImportModal({
     const lines = text.split('\n');
     // Expressions régulières pour détecter les montants et dates
     const amountRegex = /(\d+[.,]\d{2})\s*(€|EUR)?/i;
-    const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+    const dateRegex = /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/;
     // Analyser chaque ligne
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
