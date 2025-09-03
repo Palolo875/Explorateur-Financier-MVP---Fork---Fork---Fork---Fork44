@@ -1,0 +1,8 @@
+[
+  { "id": "q-fr-1", "locale": "fr", "text": "La meilleure façon de prédire l'avenir est de l'inventer.", "author": "Alan Kay" },
+  { "id": "q-fr-2", "locale": "fr", "text": "Petit à petit, l'oiseau fait son nid.", "author": "Proverbe" },
+  { "id": "q-fr-3", "locale": "fr", "text": "L'épargne d'aujourd'hui est la liberté de demain.", "author": "Anonyme" },
+  { "id": "q-en-1", "locale": "en", "text": "An investment in knowledge pays the best interest.", "author": "Benjamin Franklin" },
+  { "id": "q-en-2", "locale": "en", "text": "Do not save what is left after spending; spend what is left after saving.", "author": "Warren Buffett" },
+  { "id": "q-en-3", "locale": "en", "text": "The secret of getting ahead is getting started.", "author": "Mark Twain" }
+]
