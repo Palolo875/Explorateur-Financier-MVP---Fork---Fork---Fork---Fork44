@@ -29,6 +29,7 @@
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^10.4.20",
     "@prisma/client": "^5.18.0",
+    "@tensorflow/tfjs-node": "^4.21.0",
     "@types/node-fetch": "^2.6.13",
     "argon2": "^0.31.0",
     "cache-manager": "^7.1.1",
