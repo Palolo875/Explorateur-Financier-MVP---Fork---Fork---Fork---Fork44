@@ -3,11 +3,30 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  // In dev/test, provide a clear error to avoid undefined import.meta.env issues
-  throw new Error(
-    'Missing Supabase environment variables. Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
-  )
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
+function createSupabaseMock() {
+  const notConfiguredError = new Error('Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env')
+
+  const from = () => ({
+    insert: () => ({
+      select: async () => ({ data: null, error: notConfiguredError }),
+    }),
+  })
+
+  const functions = {
+    invoke: async () => ({ data: null, error: notConfiguredError }),
+  }
+
+  // Minimal surface used by the app
+  return { from, functions } as any
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl as string, supabaseAnonKey as string)
+  : createSupabaseMock()
+
+if (!isSupabaseConfigured) {
+  // eslint-disable-next-line no-console
+  console.warn('[supabase] VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY missing. Using safe mock client.')
+}

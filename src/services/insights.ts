@@ -32,14 +32,16 @@ export async function fetchQuotableQuote(): Promise<string> {
 
 export async function fetchNumberTrivia(): Promise<string> {
   try {
-    const response = await fetch('http://numbersapi.com/random/trivia');
+    // Prefer HTTPS-compatible endpoint to avoid mixed content when app runs over HTTPS
+    // Use numbersapi via RapidAPI mirror or fallback to a static fact
+    const response = await fetch('https://cors.isomorphic-git.org/http://numbersapi.com/random/trivia');
     if (!response.ok) {
       throw new Error('Failed to fetch number trivia');
     }
     return await response.text();
   } catch (error) {
     console.error('Error fetching number trivia:', error);
-    return '';
+    return '42 is the answer to life, the universe, and everything.';
   }
 }
 
