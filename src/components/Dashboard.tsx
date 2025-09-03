@@ -8,6 +8,10 @@ import { useFinanceStore } from '../stores/financeStore';
 import { TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, BarChart3Icon, AlertCircleIcon, CalendarIcon, SearchIcon, RefreshCwIcon, ArrowRightIcon, LineChartIcon, SettingsIcon, PlusIcon, ChevronRightIcon, InfoIcon, BellIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TargetIcon, BriefcaseIcon, HeartIcon } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, RadialBarChart, RadialBar, AreaChart, Area } from 'recharts';
 import { format } from 'date-fns';
+import { USE_CURRENCY_MODULE, USE_EDUCATION_MODULE, USE_QUOTES_MODULE, DEFAULT_LOCALE } from '@/config';
+import { convertAmount, getConversionRate } from '@/api_modules/currency/currencyService';
+import { getDailyMicroLesson } from '@/api_modules/education/educationService';
+import { getRandomQuote } from '@/api_modules/quotes/quoteService';
 import { fr } from 'date-fns/locale';
 import { FinancialInsight } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
@@ -57,6 +61,13 @@ export function Dashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  // Widgets state
+  const [convAmount, setConvAmount] = useState<number>(100);
+  const [convFrom, setConvFrom] = useState<string>('EUR');
+  const [convTo, setConvTo] = useState<string>('USD');
+  const [convResult, setConvResult] = useState<{ value: number; rate: number } | null>(null);
+  const [microLesson, setMicroLesson] = useState<{ title: string; content: string } | null>(null);
+  const [quote, setQuote] = useState<{ text: string; author?: string } | null>(null);
   // Calculate key metrics
   const totalIncome = calculateTotalIncome() || 0;
   const totalExpenses = calculateTotalExpenses() || 0;
@@ -111,6 +122,37 @@ export function Dashboard() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Initialize education and quote widgets
+    (async () => {
+      try {
+        if (USE_EDUCATION_MODULE) {
+          const lesson = await getDailyMicroLesson(DEFAULT_LOCALE as 'en' | 'fr');
+          if (lesson) setMicroLesson({ title: lesson.title, content: lesson.content });
+        }
+        if (USE_QUOTES_MODULE) {
+          const q = await getRandomQuote(DEFAULT_LOCALE as 'en' | 'fr');
+          if (q) setQuote({ text: q.text, author: q.author });
+        }
+      } catch (e) {
+        console.warn('Widget init error', e);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    // Calculate conversion result on change
+    (async () => {
+      if (!USE_CURRENCY_MODULE) return;
+      try {
+        const { value, rate } = await convertAmount(convAmount, convFrom, convTo);
+        setConvResult({ value, rate });
+      } catch (e) {
+        setConvResult(null);
+      }
+    })();
+  }, [convAmount, convFrom, convTo]);
   // Generate notifications
   const generateNotifications = () => {
     const newNotifications: DashboardNotification[] = [{
@@ -357,6 +399,35 @@ export function Dashboard() {
           </button>
         </div>
       </motion.div>
+      {/* Converter widget on top */}
+      {USE_CURRENCY_MODULE && <div className="mb-6">
+        <GlassCard className="p-4" animate>
+          <div className="flex flex-col md:flex-row md:items-end gap-3">
+            <div className="flex-1">
+              <label className={`text-xs ${themeColors?.textSecondary || 'text-gray-400'}`}>Montant</label>
+              <input type="number" value={convAmount} onChange={e => setConvAmount(parseFloat(e.target.value) || 0)} className="w-full mt-1 bg-black/30 border border-white/10 rounded-md px-3 py-2 outline-none" />
+            </div>
+            <div className="flex-1">
+              <label className={`text-xs ${themeColors?.textSecondary || 'text-gray-400'}`}>De</label>
+              <select value={convFrom} onChange={e => setConvFrom(e.target.value)} className="w-full mt-1 bg-black/30 border border-white/10 rounded-md px-3 py-2">
+                {['EUR','USD','GBP','JPY','CHF','BTC','ETH','SOL','USDT'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className={`text-xs ${themeColors?.textSecondary || 'text-gray-400'}`}>Vers</label>
+              <select value={convTo} onChange={e => setConvTo(e.target.value)} className="w-full mt-1 bg-black/30 border border-white/10 rounded-md px-3 py-2">
+                {['EUR','USD','GBP','JPY','CHF','BTC','ETH','SOL','USDT'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="md:w-64">
+              <div className="text-xs text-gray-400 mb-1">Résultat</div>
+              <div className="text-xl font-bold">{convResult ? convResult.value.toLocaleString('fr-FR') : '-'} {convTo}</div>
+              {convResult && <div className="text-xs text-gray-400">Taux: {convResult.rate.toFixed(4)}</div>}
+            </div>
+          </div>
+        </GlassCard>
+      </div>}
+
       {/* Key metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <GlassCard className="p-4" animate hover>
@@ -563,6 +634,20 @@ export function Dashboard() {
             </div>}
         </GlassCard>
       </div>
+      {/* Micro-lesson below main charts */}
+      {USE_EDUCATION_MODULE && microLesson && <div className="mb-6">
+        <GlassCard className="p-4" animate>
+          <div className="flex items-start gap-4">
+            <div>
+              <h3 className="font-medium">Micro-leçon du jour</h3>
+              <p className={`text-sm mt-1 ${themeColors?.textSecondary || 'text-gray-300'}`}>
+                <span className="font-semibold">{microLesson.title}:</span> {microLesson.content}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>}
+
       {/* Second row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Financial health */}
@@ -811,6 +896,16 @@ export function Dashboard() {
           </div>
         </GlassCard>
       </div>
+      {/* Quote at bottom of dashboard */}
+      {USE_QUOTES_MODULE && quote && <div className="mt-6">
+        <GlassCard className="p-4" animate>
+          <div className="text-center">
+            <p className="text-lg italic">“{quote.text}”</p>
+            {quote.author && <p className="text-xs text-gray-400 mt-1">— {quote.author}</p>}
+          </div>
+        </GlassCard>
+      </div>}
+
       {/* Action buttons - Fixed to use direct Link components */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to="/question" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Poser une nouvelle question">

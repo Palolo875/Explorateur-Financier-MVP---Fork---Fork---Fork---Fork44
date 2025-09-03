@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
 // Service for fetching educational content.
-export const USE_MOCK_DATA = true;
+export const USE_MOCK_DATA = false;
 
 export interface EducationResource {
   key: string;
