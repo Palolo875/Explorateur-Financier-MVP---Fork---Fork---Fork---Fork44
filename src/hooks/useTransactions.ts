@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { fetchTransactions as fetchMockTransactions, Transaction } from '@/services/banking';
+import { getUserId, selectAll } from '@/services/api';
 
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
@@ -17,21 +17,17 @@ export function useTransactions() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const userId = await getUserId();
+      if (!userId) {
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error fetching transactions:', error);
-      } else {
+      try {
+        const data = await selectAll<Transaction>('transactions', userId);
         setTransactions(data);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
       }
       setLoading(false);
     }

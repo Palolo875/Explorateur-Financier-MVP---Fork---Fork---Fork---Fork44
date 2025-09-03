@@ -141,3 +141,10 @@ Le frontend est **prêt pour la production** avec :
 - ✅ Expérience développeur améliorée (build rapide)
 
 **Conclusion** : Optimisation très réussie, application prête pour la production ! 🎉
+
+## 🔐 Gestion des variables d'environnement (Mise à jour)
+
+- Frontend: utilisez `import.meta.env` et non `process.env`.
+- Ajout de typings dans `src/vite-env.d.ts`.
+- Exemple de configuration dans `.env.example`.
+- `src/lib/supabaseClient.ts` valide la présence de `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` au démarrage.

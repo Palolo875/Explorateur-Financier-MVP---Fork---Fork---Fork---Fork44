@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { getUserId, selectAll, insertOne, updateById, deleteById } from '@/services/api';
 
 export interface Goal {
   id?: number;
@@ -27,21 +27,17 @@ export function useGoals() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const userId = await getUserId();
+      if (!userId) {
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
-        .from('goals')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error fetching goals:', error);
-      } else {
+      try {
+        const data = await selectAll<Goal>('goals', userId);
         setGoals(data);
+      } catch (error) {
+        console.error('Error fetching goals:', error);
       }
       setLoading(false);
     }
@@ -50,45 +46,32 @@ export function useGoals() {
   }, []);
 
   async function addGoal(goal: Goal) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const userId = await getUserId();
+    if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('goals')
-      .insert({ ...goal, user_id: user.id })
-      .select();
-
-    if (error) {
+    try {
+      const created = await insertOne('goals', { ...goal, user_id: userId });
+      setGoals([...goals, created]);
+    } catch (error) {
       console.error('Error adding goal:', error);
-    } else {
-      setGoals([...goals, data[0]]);
     }
   }
 
   async function updateGoal(id: number, updatedGoal: Partial<Goal>) {
-    const { data, error } = await supabase
-      .from('goals')
-      .update(updatedGoal)
-      .eq('id', id)
-      .select();
-
-    if (error) {
+    try {
+      const updated = await updateById<Goal>('goals', id, updatedGoal);
+      setGoals(goals.map(g => g.id === id ? updated : g));
+    } catch (error) {
       console.error('Error updating goal:', error);
-    } else {
-      setGoals(goals.map(g => g.id === id ? data[0] : g));
     }
   }
 
   async function deleteGoal(id: number) {
-    const { error } = await supabase
-      .from('goals')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting goal:', error);
-    } else {
+    try {
+      await deleteById('goals', id);
       setGoals(goals.filter(g => g.id !== id));
+    } catch (error) {
+      console.error('Error deleting goal:', error);
     }
   }
 
