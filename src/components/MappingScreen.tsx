@@ -1087,7 +1087,7 @@ export function MappingScreen() {
       </div>
 
       {/* Debug section - can be removed in production */}
-      {process.env.NODE_ENV === 'development' && <GlassCard className="mt-6 p-4" animate>
+      {import.meta.env.DEV && <GlassCard className="mt-6 p-4" animate>
           <h3 className="text-sm font-medium mb-2">Debug Info</h3>
           <div className="text-xs text-gray-400 space-y-1">
             <div>Active Tab: {activeTab}</div>
