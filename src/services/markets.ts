@@ -36,7 +36,7 @@ export async function fetchStockData(symbol: string): Promise<{ date: string; va
   }
 }
 
-export async function fetchCryptoData(id: string = 'bitcoin'): Promise<{ date: string; value: number }[]> {
+export async function fetchCryptoData(id = 'bitcoin'): Promise<{ date: string; value: number }[]> {
   if (USE_MOCK_DATA) {
     // Generate mock data
     const data = [];

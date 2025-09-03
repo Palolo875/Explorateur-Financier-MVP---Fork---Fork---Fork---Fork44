@@ -24,9 +24,13 @@ interface ThemeContextType {
 // Create context with default values
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'dark',
-  setTheme: () => {},
+  setTheme: () => {
+    // TODO: Implement theme setting
+  },
   colorScheme: 'indigo',
-  setColorScheme: () => {},
+  setColorScheme: () => {
+    // TODO: Implement color scheme setting
+  },
   themeColors: {
     primary: 'from-indigo-500 to-purple-600',
     secondary: 'from-amber-500 to-yellow-600',

@@ -5,7 +5,7 @@ import { useFinance } from '../context/FinanceContext';
 import { DownloadIcon, ShareIcon, FileTextIcon, ChevronLeftIcon, ChevronRightIcon, PieChartIcon, TrendingUpIcon, BarChart2Icon, AlertTriangleIcon, CheckCircleIcon, ArrowUpIcon, ArrowDownIcon, InfoIcon } from 'lucide-react';
 import { GlassCard } from './ui/GlassCard';
 import { toast, Toaster } from 'react-hot-toast';
-import dayjs from 'dayjs';
+import { format, subDays } from 'date-fns';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 // Types
 interface FinancialInsight {
@@ -32,9 +32,9 @@ interface FinancialReport {
   simulationResults: SimulationResults;
 }
 // Utility functions
-const formatDate = (dateString: string) => {
-  return dayjs(dateString).format('DD/MM/YYYY');
-};
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd/MM/yyyy');
+  };
 const formatCurrency = (value: number) => {
   return value.toLocaleString('fr-FR') + ' €';
 };
@@ -102,7 +102,7 @@ export function Reports() {
       const defaultReports: FinancialReport[] = [{
         id: '1',
         title: 'Rapport financier mensuel',
-        date: dayjs().subtract(2, 'day').toISOString(),
+        date: subDays(new Date(), 2).toISOString(),
         insights: defaultInsights,
         summary: "Ce rapport mensuel met en évidence une amélioration de votre taux d'épargne de 3% par rapport au mois précédent. Vos dépenses en loisirs ont diminué, tandis que vos revenus sont restés stables.",
         recommendations: ['Continuez à optimiser vos dépenses en loisirs', "Envisagez d'investir votre surplus d'épargne", 'Revoyez votre budget alimentaire qui a augmenté de 5%'],
@@ -110,7 +110,7 @@ export function Reports() {
       }, {
         id: '2',
         title: "Analyse d'objectif d'achat immobilier",
-        date: dayjs().subtract(15, 'day').toISOString(),
+        date: subDays(new Date(), 15).toISOString(),
         insights: defaultInsights.filter(i => i.category === 'saving' || i.category === 'expense'),
         summary: "Cette analyse évalue votre capacité à atteindre votre objectif d'achat immobilier. Avec votre taux d'épargne actuel, vous pourriez constituer un apport de 50 000€ en 7 ans et 3 mois.",
         recommendations: ["Augmentez votre taux d'épargne de 5% pour réduire le délai à 6 ans", "Explorez les aides à l'accession à la propriété", 'Optimisez vos placements pour un meilleur rendement'],
@@ -118,7 +118,7 @@ export function Reports() {
       }, {
         id: '3',
         title: 'Audit financier trimestriel',
-        date: dayjs().subtract(45, 'day').toISOString(),
+        date: subDays(new Date(), 45).toISOString(),
         insights: defaultInsights,
         summary: "Ce rapport trimestriel analyse l'évolution de votre situation financière. Votre patrimoine net a augmenté de 4.2% ce trimestre, principalement grâce à la performance de vos investissements.",
         recommendations: ["Rééquilibrez votre portefeuille d'investissement", 'Consolidez vos petites dettes', "Augmentez votre fonds d'urgence pour atteindre 6 mois de dépenses"],

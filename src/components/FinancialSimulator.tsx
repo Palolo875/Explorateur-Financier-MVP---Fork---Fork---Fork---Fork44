@@ -143,7 +143,7 @@ export function FinancialSimulator() {
     setIsLoading(true);
     setSimulationParams(params);
     try {
-      let adjustedParams = {
+      const adjustedParams = {
         ...params
       };
       switch (params.simulationType) {

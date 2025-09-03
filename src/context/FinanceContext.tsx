@@ -44,11 +44,17 @@ const defaultEmotionalContext: EmotionalContext = {
 // Create the context with default values
 const FinanceContext = createContext<FinanceContextType>({
   userQuestion: '',
-  setUserQuestion: () => {},
+  setUserQuestion: () => {
+    // TODO: Implement user question setting
+  },
   financialData: defaultFinancialData,
-  setFinancialData: () => {},
+  setFinancialData: () => {
+    // TODO: Implement financial data setting
+  },
   emotionalContext: defaultEmotionalContext,
-  setEmotionalContext: () => {},
+  setEmotionalContext: () => {
+    // TODO: Implement emotional context setting
+  },
   generateInsights: async () => [],
   runSimulation: async () => ({} as GoalSimulation),
   getFinancialHealth: async () => ({
@@ -64,7 +70,9 @@ const FinanceContext = createContext<FinanceContextType>({
   calculateTotalIncome: () => 0,
   calculateTotalExpenses: () => 0,
   calculateNetWorth: () => 0,
-  refreshData: async () => {}
+  refreshData: async () => {
+    // TODO: Implement data refresh
+  }
 });
 export function FinanceProvider({
   children

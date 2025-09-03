@@ -10,7 +10,7 @@ export interface EducationResource {
   first_publish_year: number;
 }
 
-export async function fetchEducationContent(query: string = 'personal finance'): Promise<EducationResource[]> {
+export async function fetchEducationContent(query = 'personal finance'): Promise<EducationResource[]> {
   if (USE_MOCK_DATA) {
     return [
       { key: '1', title: 'The Intelligent Investor', author_name: ['Benjamin Graham'], first_publish_year: 1949 },

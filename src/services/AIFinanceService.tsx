@@ -15,8 +15,8 @@ interface AIModelParams {
 }
 export class AIFinanceService {
   private static instance: AIFinanceService;
-  private isInitialized: boolean = false;
-  private modelLoaded: boolean = false;
+  private isInitialized = false;
+  private modelLoaded = false;
   private lastUpdate: Date = new Date();
   // Singleton pattern
   public static getInstance(): AIFinanceService {

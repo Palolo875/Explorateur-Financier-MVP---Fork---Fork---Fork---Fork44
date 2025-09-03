@@ -320,15 +320,21 @@ export function Settings() {
               <div className={`space-y-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Rappels d'objectifs</span>
-                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {}} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
+                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {
+                    // TODO: Implement notification toggle
+                  }} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Mises à jour financières</span>
-                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {}} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
+                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {
+                    // TODO: Implement notification toggle
+                  }} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Conseils personnalisés</span>
-                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {}} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
+                  <input type="checkbox" checked={notificationsEnabled} disabled={!notificationsEnabled} onChange={() => {
+                    // TODO: Implement notification toggle
+                  }} className="rounded bg-black/20 border-white/10 text-indigo-600 focus:ring-indigo-500" />
                 </div>
               </div>
             </div>

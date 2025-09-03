@@ -31,8 +31,6 @@ export class NlpCloudService {
           'Authorization': `Token ${apiKey}`,
         },
         body: JSON.stringify({ text }),
-        // @ts-ignore node-fetch timeout type
-        timeout: 8000,
       });
 
       if (!response.ok) {

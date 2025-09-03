@@ -5,15 +5,14 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useFinance } from '../context/FinanceContext';
 import { useFinanceStore } from '../stores/financeStore';
-import { LayoutDashboardIcon, TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, BarChart3Icon, AlertCircleIcon, CalendarIcon, SearchIcon, RefreshCwIcon, ArrowRightIcon, LineChartIcon, CreditCardIcon, UserIcon, SettingsIcon, PlusIcon, ChevronRightIcon, InfoIcon, BellIcon, DownloadIcon, ClockIcon, CheckCircleIcon, XCircleIcon, CircleDollarSignIcon, TargetIcon, BriefcaseIcon, HeartIcon, BellRingIcon } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, RadialBarChart, RadialBar, AreaChart, Area } from 'recharts';
-import { format, subMonths, parseISO } from 'date-fns';
+import { TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, BarChart3Icon, AlertCircleIcon, CalendarIcon, SearchIcon, RefreshCwIcon, ArrowRightIcon, LineChartIcon, SettingsIcon, PlusIcon, ChevronRightIcon, InfoIcon, BellIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TargetIcon, BriefcaseIcon, HeartIcon } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, RadialBarChart, RadialBar, AreaChart, Area } from 'recharts';
+import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { FinancialInsight } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
 import CountUp from 'react-countup';
-import { fetchStockData, fetchCryptoData } from '../services/markets';
-import { fetchTransactions, Transaction } from '../services/banking';
+import { fetchTransactions } from '../services/banking';
 import CsvImporter from './data/CsvImporter';
 // Type for dashboard notification
 interface DashboardNotification {
@@ -27,7 +26,6 @@ interface DashboardNotification {
 export function Dashboard() {
   const navigate = useNavigate();
   const {
-    theme,
     themeColors
   } = useTheme();
   const {
@@ -36,30 +34,25 @@ export function Dashboard() {
     calculateTotalExpenses,
     calculateNetWorth,
     generateInsights,
-    runSimulation,
     getFinancialHealth,
     detectHiddenFees,
-    getHistoricalData,
     getPredictions,
-    getFinancialScore,
     refreshData
   } = useFinance();
   const {
-    questionHistory,
-    financialSnapshots,
-    setHasCompletedOnboarding
+    questionHistory
   } = useFinanceStore();
   // State variables
   const [timeframe, setTimeframe] = useState('month');
   const [isLoading, setIsLoading] = useState(true);
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [healthScore, setHealthScore] = useState<number>(0);
-  const [predictions, setPredictions] = useState<any>(null);
-  const [hiddenFees, setHiddenFees] = useState<any>({
+  const [predictions, setPredictions] = useState<unknown>(null);
+  const [hiddenFees, setHiddenFees] = useState<unknown>({
     totalAmount: 0,
     items: []
   });
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [historicalData, setHistoricalData] = useState<unknown[]>([]);
   const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -197,10 +190,7 @@ export function Dashboard() {
       error: "Erreur lors de l'actualisation"
     });
   };
-  // Handle navigation
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+
   // Prepare data for charts
   const expensesByCategory = useMemo(() => {
     return financialData?.expenses?.reduce((acc, item) => {
