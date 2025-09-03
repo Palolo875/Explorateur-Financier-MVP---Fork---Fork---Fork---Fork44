@@ -13,15 +13,17 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { HealthModule } from './modules/health/health.module';
 import { InsightsModule } from './modules/insights/insights.module';
 import { JwtAuthGuard } from './modules/auth/jwt.guard';
+import { AiModule } from './modules/ai';
 import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard';
 import databaseConfig from './common/config/database.config';
 import jwtConfig from './common/config/jwt.config';
+import aiConfig from './common/config/ai.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, aiConfig],
       envFilePath: ['.env.local', '.env'],
     }),
     ThrottlerModule.forRoot([
@@ -51,6 +53,7 @@ import jwtConfig from './common/config/jwt.config';
     NotificationsModule,
     HealthModule,
     InsightsModule,
+    AiModule,
   ],
   providers: [
     {
