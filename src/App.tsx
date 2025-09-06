@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { QuestionScreen } from './components/QuestionScreen';
@@ -21,9 +20,9 @@ import { FinancialSimulator } from './components/FinancialSimulator';
 import { EmotionalJournal } from './components/EmotionalJournal';
 import { HiddenFeesDetector } from './components/HiddenFeesDetector';
 // Désactiver les restrictions premium globalement
-if (window) {
-  window.PREMIUM_ENABLED = true;
-  window.DISABLE_PREMIUM_RESTRICTIONS = true;
+if (typeof window !== 'undefined') {
+  (window as any).PREMIUM_ENABLED = true;
+  (window as any).DISABLE_PREMIUM_RESTRICTIONS = true;
 }
 export function App() {
   const {
