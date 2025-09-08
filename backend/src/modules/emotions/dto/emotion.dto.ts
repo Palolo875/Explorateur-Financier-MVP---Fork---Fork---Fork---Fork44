@@ -11,7 +11,7 @@ export class CreateEmotionDto {
   })
   @IsString()
   @IsIn(VALID_MOODS)
-  mood: string;
+  mood!: string;
 
   @ApiPropertyOptional({ description: 'Additional notes about the mood', example: 'Feeling great after a successful day' })
   @IsOptional()

@@ -34,7 +34,7 @@ export class HealthController {
           total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         status: 'error',
         timestamp: new Date().toISOString(),
@@ -79,7 +79,7 @@ export class HealthController {
 
     if (alphaKey) {
       try {
-        const res = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&apikey=${alphaKey}&limit=1`, { timeout: 8000 } as any);
+        const res = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&apikey=${alphaKey}&limit=1` as any);
         if (res.ok) {
           alphaStatus = 'ok';
         } else {

@@ -48,9 +48,7 @@ export class ExternalApisService {
 
     try {
       // ZenQuotes API - 5 requêtes/30 secondes gratuit
-      const response = await fetch('https://zenquotes.io/api/random', {
-        timeout: 5000,
-      });
+      const response = await fetch('https://zenquotes.io/api/random');
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -125,8 +123,7 @@ export class ExternalApisService {
       }
 
       const response = await fetch(
-        `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&apikey=${apiKey}&limit=5`,
-        { timeout: 10000 }
+        `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&apikey=${apiKey}&limit=5`
       );
 
       if (!response.ok) {
@@ -160,8 +157,7 @@ export class ExternalApisService {
     try {
       // Utiliser NewsAPI ou une alternative gratuite
       const response = await fetch(
-        `https://newsapi.org/v2/everything?q=finance+economics&sortBy=publishedAt&pageSize=${limit}&language=fr&apiKey=${process.env.NEWS_API_KEY}`,
-        { timeout: 10000 }
+        `https://newsapi.org/v2/everything?q=finance+economics&sortBy=publishedAt&pageSize=${limit}&language=fr&apiKey=${process.env.NEWS_API_KEY}`
       );
 
       if (!response.ok) {
