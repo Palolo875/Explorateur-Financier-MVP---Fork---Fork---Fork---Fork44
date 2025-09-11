@@ -1,11 +1,5 @@
 import { DEFAULT_LOCALE, USE_QUOTES_MODULE } from '@/config';
-
-export interface QuoteItem {
-  id: string;
-  text: string;
-  author?: string;
-  locale: 'en' | 'fr';
-}
+import { QuoteItem } from '@/types/domain';
 
 async function fetchRemoteQuote(locale: 'en' | 'fr'): Promise<QuoteItem | null> {
   try {

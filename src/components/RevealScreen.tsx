@@ -2,7 +2,6 @@ import React, { useEffect, useState, memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import { useFinance } from '../context/FinanceContext';
 import { useFinanceStore } from '../stores/financeStore';
 import { GlassCard } from './ui/GlassCard';
@@ -12,18 +11,12 @@ import { toast, Toaster } from 'react-hot-toast';
 import { FinancialInsight } from '../types/finance';
 import CountUp from 'react-countup';
 import { supabase } from '@/lib/supabaseClient';
-import { revelationService, FinancialContext } from '@/services/RevelationService';
+import { generateInsights, calculateRevelationScore } from '@/lib/insightsEngine';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useEmotions } from '@/hooks/useEmotions';
 import { useGoals } from '@/hooks/useGoals';
+import { AnalysisSection } from '@/types/domain';
 
-// Définition des types pour les sections d'analyse
-interface AnalysisSection {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  expanded: boolean;
-}
 export function RevealScreen() {
   const navigate = useNavigate();
   const {
@@ -37,6 +30,7 @@ export function RevealScreen() {
     calculateTotalIncome,
     calculateTotalExpenses,
     calculateNetWorth,
+    generateInsights,
     getFinancialHealth
   } = useFinance();
   const {
@@ -46,7 +40,7 @@ export function RevealScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [revelation, setRevelation] = useState<string>('');
+  const [insights, setInsights] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
   const [healthScore, setHealthScore] = useState<number>(0);
   const [recommendations, setRecommendations] = useState<string[]>([]);
@@ -126,34 +120,12 @@ export function RevealScreen() {
       try {
         // Simuler un délai de traitement pour l'animation
         await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Construct financial context for the new RevelationService
-        const financialContext: FinancialContext = {
-          totalIncome: totalIncome,
-          totalExpenses: totalExpenses,
-          savingsRate: savingsRate,
-          netWorth: netWorth,
-          topExpenses: Object.entries(
-            (financialData?.expenses || []).reduce((acc, item) => {
-              acc[item.category] = (acc[item.category] || 0) + item.value;
-              return acc;
-            }, {} as Record<string, number>)
-          )
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 3)
-            .map(([category, amount]) => ({ category, amount })),
-          goals: goalsData.map(g => ({ name: g.title, target: g.target_amount, current: g.current_amount })),
-        };
-
-        const question = userQuestion || 'What is my financial situation?';
-        const answer = await revelationService.getRevelation(question, financialContext);
-        setRevelation(answer);
-
-        // Keep score calculation for now, can be replaced later
-        const health = await getFinancialHealth();
-        setHealthScore(health?.score || 50);
+        // Generate insights and score
+        const newInsights = await generateInsights(transactions, goalsData, emotions);
+        setInsights(newInsights);
+        const newScore = await calculateRevelationScore(transactions, goalsData);
+        setHealthScore(newScore);
         setGoals(goalsData);
-
         setShowAnimation(false);
         // Simuler un court délai avant d'afficher les résultats
         setTimeout(() => {
@@ -168,7 +140,7 @@ export function RevealScreen() {
       }
     };
     loadAnalysisData();
-  }, [transactions, emotions, goalsData, transactionsLoading, emotionsLoading, goalsLoading, userQuestion]);
+  }, [transactions, emotions, goalsData, transactionsLoading, emotionsLoading, goalsLoading]);
   // Basculer l'état d'expansion d'une section
   const toggleSection = (sectionId: string) => {
     setExpandedSections({
@@ -343,28 +315,22 @@ export function RevealScreen() {
                         <h3 className="font-medium mb-4">Projection de Cashflow</h3>
                         <div className="h-64">
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={(() => {
-                              const data = [];
-                              const monthNames = ["Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aou", "Sep", "Oct", "Nov", "Dec"];
-                              let currentBalance = netWorth;
-                              for (let i = 0; i < 6; i++) {
-                                const month = monthNames[(new Date().getMonth() + i) % 12];
-                                currentBalance += balance * (1 + 0.02 * i); // Optimistic growth
-                                data.push({
-                                  name: month,
-                                  projection: currentBalance,
-                                  real: (i === 0) ? netWorth : undefined, // Show current net worth
-                                });
-                              }
-                              return data;
-                            })()}>
+                            <LineChart data={[
+                              { name: 'Jan', real: 4000, optimistic: 4200 },
+                              { name: 'Fev', real: 3000, optimistic: 3200 },
+                              { name: 'Mar', real: 2000, optimistic: 2500 },
+                              { name: 'Avr', real: 2780, optimistic: 3000 },
+                              { name: 'Mai', real: 1890, optimistic: 2200 },
+                              { name: 'Juin', real: 2390, optimistic: 2600 },
+                              { name: 'Juil', real: 3490, optimistic: 3800 },
+                            ]}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="name" />
                               <YAxis />
                               <Tooltip />
                               <Legend />
-                              <Line type="monotone" dataKey="projection" stroke="#8884d8" name="Projection" />
-                              <Line type="monotone" dataKey="real" stroke="#82ca9d" name="Actuel" />
+                              <Line type="monotone" dataKey="real" stroke="#8884d8" name="Réel" />
+                              <Line type="monotone" dataKey="optimistic" stroke="#82ca9d" name="Optimiste" />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -387,38 +353,7 @@ export function RevealScreen() {
               </GlassCard>
 
               {/* Sections d'analyse */}
-              {/* Revelation Section */}
-              <GlassCard className="p-6 mb-6" animate>
-                <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleSection('revelation')}>
-                  <div className="flex items-center">
-                    <BrainIcon className="h-5 w-5 text-indigo-400" />
-                    <h2 className="text-xl font-bold ml-2">Révélation</h2>
-                  </div>
-                  <button className="p-1 hover:bg-black/20 rounded-full">
-                    {expandedSections['revelation'] ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
-                  </button>
-                </div>
-                <AnimatePresence>
-                  {expandedSections['revelation'] && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pt-4 mt-4 border-t border-white/10">
-                        <p className="text-lg bg-black/20 p-4 rounded-lg">
-                          {revelation || 'Aucune révélation pour le moment.'}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </GlassCard>
-
-              {/* Other Analysis Sections */}
-              {analysisSections.filter(s => s.id !== 'insights').map(section => <GlassCard key={section.id} className="p-6 mb-6" animate>
+              {analysisSections.map(section => <GlassCard key={section.id} className="p-6 mb-6" animate>
                   <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleSection(section.id)}>
                     <div className="flex items-center">
                       {section.icon}
@@ -444,6 +379,25 @@ export function RevealScreen() {
               duration: 0.3
             }} className="overflow-hidden">
                         <div className="pt-4 mt-4 border-t border-white/10">
+                          {/* Contenu des insights financiers */}
+                          {section.id === 'insights' && <div className="space-y-4">
+                              {insights.length > 0 ? insights.map((insight, index) => (
+                                <div key={index} className="bg-black/20 p-4 rounded-lg">
+                                  <h4 className="font-medium mb-2">{insight.message}</h4>
+                                  {insight.bias && <p className="text-sm text-gray-400 mb-1">Biais: {insight.bias}</p>}
+                                  {insight.fact && <p className="text-sm text-gray-400 mb-1">Fait: {insight.fact}</p>}
+                                  {insight.quote && <p className="text-sm text-gray-400 mb-1">Quote: {insight.quote}</p>}
+                                  {insight.recommendation && <p className="text-sm text-green-400 mb-1">Recommendation: {insight.recommendation}</p>}
+                                  {insight.trivia && <p className="text-sm text-blue-400 mb-1">Trivia: {insight.trivia}</p>}
+                                </div>
+                              )) : <div className="text-center py-6 text-gray-400">
+                                  <p>Aucun insight financier disponible</p>
+                                  <p className="text-sm mt-1">
+                                    Ajoutez plus de données financières pour
+                                    obtenir des insights personnalisés
+                                  </p>
+                                </div>}
+                            </div>}
                           {/* Contenu de la santé financière */}
                           {section.id === 'health' && <div className="space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -567,6 +521,10 @@ export function RevealScreen() {
                                 <p className="text-sm mb-3">
                                   {emotionalContext.mood > 7 ? "Compte tenu de votre niveau de stress financier élevé, nous vous recommandons de vous concentrer d'abord sur la création d'un fonds d'urgence pour vous apporter plus de sécurité." : "Votre niveau de stress financier semble gérable. Nous vous recommandons de vous concentrer sur l'optimisation de votre budget et l'augmentation de votre taux d'épargne."}
                                 </p>
+                                <button className={`w-full py-2 rounded-lg bg-gradient-to-r ${themeColors.primary} hover:opacity-90 text-sm flex items-center justify-center`} onClick={() => navigate('/simulation')}>
+                                  Voir un plan d'action détaillé
+                                  <ArrowRightIcon className="h-4 w-4 ml-1" />
+                                </button>
                               </div>
                             </div>}
                           {/* Contenu de l'analyse émotionnelle */}

@@ -4,21 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, BookOpenIcon, DownloadIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, FileTextIcon, BookIcon, NewspaperIcon, FileIcon, ExternalLinkIcon, BarChartIcon, TrendingUpIcon, GlobeIcon, CreditCardIcon, HomeIcon, PiggyBankIcon, ShieldIcon } from 'lucide-react';
-import { getAllMicroLessons, MicroLesson } from '../api_modules/education/educationService';
-interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  type: 'article' | 'guide' | 'rapport' | 'outil';
-  source: string;
-  url: string;
-  image?: string;
-  date: string;
-  featured?: boolean;
-  tags: string[];
-  rating?: number; // 1-5
-}
+import { fetchEducationContent, EducationResource } from '../services/education';
+import { Resource } from '@/types/domain';
+
 export function Library() {
   const navigate = useNavigate();
   const {
@@ -33,23 +21,25 @@ export function Library() {
     const loadResources = async () => {
       setIsLoading(true);
       try {
-        const microLessons = await getAllMicroLessons('fr');
-        const resourcesData = microLessons.map((lesson, index) => ({
-          id: lesson.id,
-          title: lesson.title,
-          description: lesson.content,
-          category: 'Leçons',
+        const educationalContent = await fetchEducationContent();
+        const resourcesData = educationalContent.map((resource, index) => ({
+          id: resource.key,
+          title: resource.title,
+          description: `Un livre par ${resource.author_name.join(', ')}, publié en ${resource.first_publish_year}.`,
+          category: 'Littérature financière',
           type: 'guide',
-          source: 'Rivela',
-          url: '#', // No external URL for micro-lessons
-          date: new Date().toLocaleDateString(),
+          source: 'Open Library',
+          url: `https://openlibrary.org${resource.key}`,
+          image: `https://covers.openlibrary.org/b/id/${resource.key}-M.jpg`,
+          date: resource.first_publish_year.toString(),
           featured: index < 3,
-          tags: ['micro-leçon', 'finance'],
-          rating: 4.5,
+          tags: ['livre', 'finance'],
+          // rating: 4.5, // Placeholder
         }));
         setResources(resourcesData);
       } catch (error) {
         console.error('Error fetching resources:', error);
+        toast.error('Erreur lors du chargement des ressources');
       } finally {
         setIsLoading(false);
       }

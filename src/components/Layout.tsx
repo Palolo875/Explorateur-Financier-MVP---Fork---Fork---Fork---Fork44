@@ -3,9 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboardIcon, LineChartIcon, BarChart3Icon, UserIcon, SettingsIcon, LogOutIcon, MenuIcon, XIcon, BookOpenIcon, GraduationCapIcon, MessageSquareIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-interface LayoutProps {
-  children: React.ReactNode;
-}
+import { LayoutProps } from '@/types/domain';
+
 export function Layout({
   children
 }: LayoutProps) {
