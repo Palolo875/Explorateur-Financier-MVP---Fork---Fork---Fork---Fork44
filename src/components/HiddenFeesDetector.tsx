@@ -6,18 +6,8 @@ import { SearchIcon, AlertCircleIcon, CheckCircleIcon, TrendingDownIcon, Refresh
 import { toast, Toaster } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { fetchTransactions, Transaction } from '../services/banking';
-// Types for hidden fees
-interface HiddenFee {
-  id: string;
-  category: string;
-  amount: number;
-  description: string;
-  potentialSaving: number;
-  actionable: boolean;
-  actionType?: 'call' | 'email' | 'cancel' | 'negotiate' | 'switch';
-  actionDetails?: string;
-  recurrenceType?: 'monthly' | 'quarterly' | 'yearly' | 'one-time';
-}
+import { HiddenFee } from '@/types/domain';
+
 export function HiddenFeesDetector() {
   const {
     theme,

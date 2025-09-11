@@ -1,15 +1,5 @@
 import { CURRENCY_CONFIG } from '@/config';
-
-export interface ConversionResult {
-  base: string;
-  target: string;
-  rate: number;
-  value: number;
-}
-
-export interface RatesMap {
-  [symbol: string]: number;
-}
+import { ConversionResult, RatesMap } from '@/types/domain';
 
 const EXCHANGERATE_HOST_BASE = 'https://api.exchangerate.host';
 
