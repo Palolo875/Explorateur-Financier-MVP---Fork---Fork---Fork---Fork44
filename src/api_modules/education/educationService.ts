@@ -38,3 +38,18 @@ export async function getDailyMicroLesson(locale: 'en' | 'fr' = DEFAULT_LOCALE a
   const idx = dayIndex % pool.length;
   return pool[idx];
 }
+
+export async function getAllMicroLessons(locale: 'en' | 'fr' = DEFAULT_LOCALE as 'en' | 'fr'): Promise<MicroLesson[]> {
+  if (!USE_EDUCATION_MODULE) return [];
+
+  const [remote, local] = await Promise.all([fetchRemoteMicroLessons(), fetchLocalMicroLessons()]);
+  const pool = (remote.length ? remote : local).filter(l => l.locale === locale);
+
+  if (!pool.length) {
+    // Fallback to English if no lessons are available for the selected locale
+    const fallbackPool = (remote.length ? remote : local).filter(l => l.locale === 'en');
+    return fallbackPool;
+  }
+
+  return pool;
+}
