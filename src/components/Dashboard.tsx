@@ -110,7 +110,6 @@ export function Dashboard() {
         setHiddenFees(fees);
         const futureData = await getPredictions();
         setPredictions(futureData);
-        generateNotifications();
         setLastUpdate(new Date());
 
       } catch (error) {
@@ -153,40 +152,6 @@ export function Dashboard() {
       }
     })();
   }, [convAmount, convFrom, convTo]);
-  // Generate notifications
-  const generateNotifications = () => {
-    const newNotifications: DashboardNotification[] = [{
-      id: '1',
-      title: 'Alerte budget',
-      message: 'Vous avez atteint 85% de votre budget loisirs ce mois-ci.',
-      type: 'warning',
-      date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: false
-    }, {
-      id: '2',
-      title: 'Frais bancaires détectés',
-      message: 'Nous avons détecté des frais bancaires inhabituels de 12,50€.',
-      type: 'danger',
-      date: new Date(Date.now() - 8 * 60 * 60 * 1000),
-      read: false
-    }, {
-      id: '3',
-      title: 'Objectif atteint',
-      message: 'Félicitations ! Vous avez atteint votre objectif d\'épargne "Vacances".',
-      type: 'success',
-      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      read: true
-    }, {
-      id: '4',
-      title: 'Nouvelle analyse disponible',
-      message: 'Votre rapport financier mensuel est disponible.',
-      type: 'info',
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      read: true
-    }];
-    setNotifications(newNotifications);
-    setUnreadNotifications(newNotifications.filter(n => !n.read).length);
-  };
   // Mark notification as read
   const markAsRead = (id: string) => {
     setNotifications(notifications.map(n => n.id === id ? {
@@ -253,41 +218,6 @@ export function Dashboard() {
     }));
   }, [expensesByCategory]);
   // Financial health radar data
-  const healthRadarData = [{
-    subject: 'Épargne',
-    A: savingsRate > 20 ? 100 : savingsRate > 10 ? 70 : savingsRate > 5 ? 40 : 20,
-    fullMark: 100
-  }, {
-    subject: 'Budget',
-    A: totalExpenses < totalIncome ? 90 : 30,
-    fullMark: 100
-  }, {
-    subject: 'Dettes',
-    A: (financialData?.debts?.length || 0) === 0 ? 100 : 50,
-    fullMark: 100
-  }, {
-    subject: 'Investissements',
-    A: (financialData?.investments?.length || 0) > 0 ? 80 : 20,
-    fullMark: 100
-  }, {
-    subject: 'Protection',
-    A: 65,
-    fullMark: 100
-  }];
-  // Goal progress data
-  const goalData = [{
-    name: "Fonds d'urgence",
-    value: 35,
-    fill: '#8884d8'
-  }, {
-    name: 'Vacances',
-    value: 85,
-    fill: '#82ca9d'
-  }, {
-    name: 'Acompte immobilier',
-    value: 12,
-    fill: '#ffc658'
-  }];
   // Pie chart colors
   const COLORS = (themeColors?.chartColors?.length ? themeColors.chartColors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe']);
   // Close notifications when clicking outside
@@ -650,122 +580,6 @@ export function Dashboard() {
 
       {/* Second row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Financial health */}
-        <GlassCard className="p-4" animate>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium flex items-center">
-              <HeartIcon className="h-5 w-5 mr-2 text-red-400" />
-              Santé financière
-            </h3>
-            <div className={`text-xs px-2 py-1 rounded-full ${healthScore >= 70 ? 'bg-green-500/20 text-green-300' : healthScore >= 50 ? 'bg-blue-500/20 text-blue-300' : healthScore >= 30 ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'}`}>
-              Score: {healthScore}/100
-            </div>
-          </div>
-          {isLoading ? <div className="h-64 flex items-center justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-            </div> : <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={healthRadarData}>
-                  <PolarGrid stroke="#444" />
-                  <PolarAngleAxis dataKey="subject" stroke="#aaa" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#aaa" />
-                  <Radar name="Santé financière" dataKey="A" stroke={COLORS[0]} fill={COLORS[0]} fillOpacity={0.6} />
-                  <Tooltip formatter={value => [`${value}/100`, '']} contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px'
-              }} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>}
-          <div className="mt-2">
-            <button onClick={() => navigate('/reveal')} className={`w-full py-2 rounded-lg bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} hover:opacity-90 text-sm flex items-center justify-center`}>
-              Analyse complète
-              <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-        </GlassCard>
-        {/* Goals progress */}
-        <GlassCard className="p-4" animate>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium flex items-center">
-              <TargetIcon className="h-5 w-5 mr-2 text-green-400" />
-              Objectifs financiers
-            </h3>
-            <button className="text-xs bg-black/20 px-2 py-1 rounded-full flex items-center" onClick={() => navigate('/settings')}>
-              <PlusIcon className="h-3 w-3 mr-1" />
-              Ajouter
-            </button>
-          </div>
-          {isLoading ? <div className="h-64 flex items-center justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-            </div> : <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="80%" barSize={15} data={goalData}>
-                  <RadialBar label={{
-                position: 'insideStart',
-                fill: '#fff'
-              }} background dataKey="value" />
-                  <Tooltip formatter={value => [`${value}%`, 'Progression']} contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px'
-              }} />
-                  <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
-                </RadialBarChart>
-              </ResponsiveContainer>
-            </div>}
-          <div className="mt-2 space-y-2">
-            <div className="bg-black/20 p-2 rounded-lg flex justify-between items-center">
-              <div className="text-sm">Fonds d'urgence</div>
-              <div className="text-xs">1 750€ / 5 000€</div>
-            </div>
-            <div className="bg-black/20 p-2 rounded-lg flex justify-between items-center">
-              <div className="text-sm">Vacances d'été</div>
-              <div className="text-xs">1 700€ / 2 000€</div>
-            </div>
-            <div className="bg-black/20 p-2 rounded-lg flex justify-between items-center">
-              <div className="text-sm">Acompte immobilier</div>
-              <div className="text-xs">6 000€ / 50 000€</div>
-            </div>
-          </div>
-        </GlassCard>
-        {/* Financial insights */}
-        <GlassCard className="p-4" animate>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium flex items-center">
-              <LineChartIcon className="h-5 w-5 mr-2 text-indigo-400" />
-              Insights financiers
-            </h3>
-            <div className="text-xs bg-indigo-500/20 px-2 py-1 rounded-full">
-              {insights.length} détectés
-            </div>
-          </div>
-          {isLoading ? <div className="h-64 flex items-center justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-            </div> : <div className="space-y-3 max-h-64 overflow-y-auto">
-              {insights && insights.length > 0 ? insights.map((insight, index) => <div key={insight.id || index} className={`p-3 rounded-lg ${insight.impact === 'high' ? 'bg-red-900/20 border border-red-500/30' : insight.impact === 'medium' ? 'bg-yellow-900/20 border border-yellow-500/30' : 'bg-green-900/20 border border-green-500/30'}`}>
-                    <div className="flex items-center mb-1">
-                      <span className={`w-2 h-2 rounded-full mr-2 ${insight.impact === 'high' ? 'bg-red-500' : insight.impact === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
-                      <h4 className="text-sm font-medium">{insight.title}</h4>
-                    </div>
-                    <p className="text-xs text-gray-300">
-                      {insight.description}
-                    </p>
-                  </div>) : <div className="text-center py-6 text-gray-400">
-                  <p className="text-sm">Pas d'insights disponibles</p>
-                  <p className="text-xs mt-1">
-                    Ajoutez plus de données financières
-                  </p>
-                </div>}
-            </div>}
-          <div className="mt-4">
-            <button onClick={() => navigate('/reveal')} className={`w-full py-2 rounded-lg bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} hover:opacity-90 text-sm flex items-center justify-center`}>
-              Voir tous les insights
-              <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-        </GlassCard>
       </div>
       {/* Third row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -837,64 +651,6 @@ export function Dashboard() {
             </button>
           </div>
         </GlassCard>
-        {/* Financial forecast */}
-        <GlassCard className="p-4" animate>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium flex items-center">
-              <BriefcaseIcon className="h-5 w-5 mr-2 text-purple-400" />
-              Prévisions financières
-            </h3>
-            <div className="text-xs bg-black/20 px-2 py-1 rounded-full">
-              12 mois
-            </div>
-          </div>
-          {isLoading ? <div className="h-64 flex items-center justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-            </div> : <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={[{
-              month: 'J',
-              valeur: totalIncome - totalExpenses
-            }, {
-              month: 'F',
-              valeur: (totalIncome - totalExpenses) * 1.02
-            }, {
-              month: 'M',
-              valeur: (totalIncome - totalExpenses) * 1.03
-            }, {
-              month: 'A',
-              valeur: (totalIncome - totalExpenses) * 1.05
-            }, {
-              month: 'M',
-              valeur: (totalIncome - totalExpenses) * 1.06
-            }, {
-              month: 'J',
-              valeur: (totalIncome - totalExpenses) * 1.08
-            }]} margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5
-            }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                  <XAxis dataKey="month" stroke="#aaa" />
-                  <YAxis stroke="#aaa" />
-                  <Tooltip formatter={value => [`${value.toLocaleString('fr-FR')}€`, 'Épargne prévisionnelle']} contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px'
-              }} />
-                  <Bar dataKey="valeur" fill={COLORS[4]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>}
-          <div className="mt-4">
-            <button onClick={() => navigate('/simulation')} className={`w-full py-2 rounded-lg bg-gradient-to-r ${themeColors?.primary || 'from-indigo-500 to-purple-600'} hover:opacity-90 text-sm flex items-center justify-center`}>
-              Simulations avancées
-              <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-        </GlassCard>
       </div>
       {/* Quote at bottom of dashboard */}
       {USE_QUOTES_MODULE && quote && <div className="mt-6">
@@ -911,10 +667,6 @@ export function Dashboard() {
         <Link to="/question" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Poser une nouvelle question">
           <SearchIcon className="h-5 w-5 mr-2 text-indigo-400" />
           <span>Nouvelle question</span>
-        </Link>
-        <Link to="/simulation" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Voir les simulations">
-          <LineChartIcon className="h-5 w-5 mr-2 text-green-400" />
-          <span>Simulations</span>
         </Link>
         <Link to="/reports" className="bg-black/30 hover:bg-black/40 p-4 rounded-lg flex items-center justify-center transition-all" aria-label="Voir les rapports">
           <BarChart3Icon className="h-5 w-5 mr-2 text-blue-400" />

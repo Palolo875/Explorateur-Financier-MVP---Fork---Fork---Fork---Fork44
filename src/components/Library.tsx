@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, BookOpenIcon, DownloadIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, FileTextIcon, BookIcon, NewspaperIcon, FileIcon, ExternalLinkIcon, BarChartIcon, TrendingUpIcon, GlobeIcon, CreditCardIcon, HomeIcon, PiggyBankIcon, ShieldIcon } from 'lucide-react';
-import { fetchEducationContent, EducationResource } from '../services/education';
+import { getAllMicroLessons, MicroLesson } from '../api_modules/education/educationService';
 interface Resource {
   id: string;
   title: string;
@@ -33,25 +33,23 @@ export function Library() {
     const loadResources = async () => {
       setIsLoading(true);
       try {
-        const educationalContent = await fetchEducationContent();
-        const resourcesData = educationalContent.map((resource, index) => ({
-          id: resource.key,
-          title: resource.title,
-          description: `Un livre par ${resource.author_name.join(', ')}, publié en ${resource.first_publish_year}.`,
-          category: 'Littérature financière',
+        const microLessons = await getAllMicroLessons('fr');
+        const resourcesData = microLessons.map((lesson, index) => ({
+          id: lesson.id,
+          title: lesson.title,
+          description: lesson.content,
+          category: 'Leçons',
           type: 'guide',
-          source: 'Open Library',
-          url: `https://openlibrary.org${resource.key}`,
-          image: `https://covers.openlibrary.org/b/id/${resource.key}-M.jpg`,
-          date: resource.first_publish_year.toString(),
+          source: 'Rivela',
+          url: '#', // No external URL for micro-lessons
+          date: new Date().toLocaleDateString(),
           featured: index < 3,
-          tags: ['livre', 'finance'],
-          // rating: 4.5, // Placeholder
+          tags: ['micro-leçon', 'finance'],
+          rating: 4.5,
         }));
         setResources(resourcesData);
       } catch (error) {
         console.error('Error fetching resources:', error);
-        toast.error('Erreur lors du chargement des ressources');
       } finally {
         setIsLoading(false);
       }
