@@ -8,8 +8,31 @@ import { GlassCard } from './ui/GlassCard';
 import { ArrowRightIcon, SearchIcon, HeartIcon, BrainIcon, LayoutDashboardIcon, RefreshCwIcon, TrendingUpIcon, AlertCircleIcon, ThumbsUpIcon, ThumbsDownIcon, SmileIcon, FrownIcon, MehIcon, CheckIcon, XIcon, HistoryIcon, TagIcon, MessageCircleIcon, RefreshCcwIcon, LightbulbIcon, ChevronRightIcon } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { QuestionSuggestion } from '../types/finance';
-import { QuestionHistoryItem, ContextualTag, MoodArchetype } from '@/types/domain';
-
+// Type pour l'historique des questions avec contexte
+interface QuestionHistoryItem {
+  id: string;
+  text: string;
+  timestamp: number;
+  emotionalContext?: {
+    mood: number;
+    tags: string[];
+  };
+}
+// Type pour les tags contextuels
+interface ContextualTag {
+  id: string;
+  label: string;
+  category: 'work' | 'family' | 'health' | 'finance' | 'other';
+}
+// Type pour les archétypes animaux d'humeur
+interface MoodArchetype {
+  id: string;
+  animal: string;
+  label: string;
+  description: string;
+  moodValue: number;
+  emoji: string;
+}
 export function QuestionScreen() {
   const navigate = useNavigate();
   const {

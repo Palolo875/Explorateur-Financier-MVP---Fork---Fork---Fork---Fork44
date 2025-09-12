@@ -1,8 +1,14 @@
 import { toast } from 'react-hot-toast';
-import { EducationResource } from '@/types/domain';
 
 // Service for fetching educational content.
 export const USE_MOCK_DATA = false;
+
+export interface EducationResource {
+  key: string;
+  title: string;
+  author_name: string[];
+  first_publish_year: number;
+}
 
 export async function fetchEducationContent(query = 'personal finance'): Promise<EducationResource[]> {
   if (USE_MOCK_DATA) {

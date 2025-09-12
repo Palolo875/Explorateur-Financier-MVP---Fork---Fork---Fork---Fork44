@@ -11,12 +11,17 @@ import { toast, Toaster } from 'react-hot-toast';
 import { FinancialInsight } from '../types/finance';
 import CountUp from 'react-countup';
 import { supabase } from '@/lib/supabaseClient';
-import { generateInsights, calculateRevelationScore } from '@/lib/insightsEngine';
+import { revelationService, FinancialContext } from '@/services/RevelationService';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useEmotions } from '@/hooks/useEmotions';
 import { useGoals } from '@/hooks/useGoals';
-import { AnalysisSection } from '@/types/domain';
-
+// Définition des types pour les sections d'analyse
+interface AnalysisSection {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  expanded: boolean;
+}
 export function RevealScreen() {
   const navigate = useNavigate();
   const {
@@ -40,7 +45,7 @@ export function RevealScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [insights, setInsights] = useState<any[]>([]);
+  const [revelation, setRevelation] = useState<string>('');
   const [goals, setGoals] = useState<any[]>([]);
   const [healthScore, setHealthScore] = useState<number>(0);
   const [recommendations, setRecommendations] = useState<string[]>([]);
@@ -120,12 +125,34 @@ export function RevealScreen() {
       try {
         // Simuler un délai de traitement pour l'animation
         await new Promise(resolve => setTimeout(resolve, 2000));
-        // Generate insights and score
-        const newInsights = await generateInsights(transactions, goalsData, emotions);
-        setInsights(newInsights);
-        const newScore = await calculateRevelationScore(transactions, goalsData);
-        setHealthScore(newScore);
+
+        // Construct financial context for the new RevelationService
+        const financialContext: FinancialContext = {
+          totalIncome: totalIncome,
+          totalExpenses: totalExpenses,
+          savingsRate: savingsRate,
+          netWorth: netWorth,
+          topExpenses: Object.entries(
+            (financialData?.expenses || []).reduce((acc, item) => {
+              acc[item.category] = (acc[item.category] || 0) + Number(item.value);
+              return acc;
+            }, {} as Record<string, number>)
+          )
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 3)
+            .map(([category, amount]) => ({ category, amount })),
+          goals: goalsData.map(g => ({ name: g.title, target: g.target_amount, current: g.current_amount })),
+        };
+
+        const question = userQuestion || 'What is my financial situation?';
+        const answer = await revelationService.getRevelation(question, financialContext);
+        setRevelation(answer);
+
+        // Keep score calculation for now, can be replaced later
+        const health = await getFinancialHealth();
+        setHealthScore(health?.score || 50);
         setGoals(goalsData);
+
         setShowAnimation(false);
         // Simuler un court délai avant d'afficher les résultats
         setTimeout(() => {
@@ -140,7 +167,7 @@ export function RevealScreen() {
       }
     };
     loadAnalysisData();
-  }, [transactions, emotions, goalsData, transactionsLoading, emotionsLoading, goalsLoading]);
+  }, [transactions, emotions, goalsData, transactionsLoading, emotionsLoading, goalsLoading, userQuestion, financialData, totalIncome, totalExpenses, savingsRate, netWorth]);
   // Basculer l'état d'expansion d'une section
   const toggleSection = (sectionId: string) => {
     setExpandedSections({
@@ -315,22 +342,28 @@ export function RevealScreen() {
                         <h3 className="font-medium mb-4">Projection de Cashflow</h3>
                         <div className="h-64">
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={[
-                              { name: 'Jan', real: 4000, optimistic: 4200 },
-                              { name: 'Fev', real: 3000, optimistic: 3200 },
-                              { name: 'Mar', real: 2000, optimistic: 2500 },
-                              { name: 'Avr', real: 2780, optimistic: 3000 },
-                              { name: 'Mai', real: 1890, optimistic: 2200 },
-                              { name: 'Juin', real: 2390, optimistic: 2600 },
-                              { name: 'Juil', real: 3490, optimistic: 3800 },
-                            ]}>
+                            <LineChart data={(() => {
+                              const data = [];
+                              const monthNames = ["Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aou", "Sep", "Oct", "Nov", "Dec"];
+                              let currentBalance = netWorth;
+                              for (let i = 0; i < 6; i++) {
+                                const month = monthNames[(new Date().getMonth() + i) % 12];
+                                currentBalance += balance * (1 + 0.02 * i); // Optimistic growth
+                                data.push({
+                                  name: month,
+                                  projection: currentBalance,
+                                  real: (i === 0) ? netWorth : undefined, // Show current net worth
+                                });
+                              }
+                              return data;
+                            })()}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="name" />
                               <YAxis />
                               <Tooltip />
                               <Legend />
-                              <Line type="monotone" dataKey="real" stroke="#8884d8" name="Réel" />
-                              <Line type="monotone" dataKey="optimistic" stroke="#82ca9d" name="Optimiste" />
+                              <Line type="monotone" dataKey="projection" stroke="#8884d8" name="Projection" />
+                              <Line type="monotone" dataKey="real" stroke="#82ca9d" name="Actuel" />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -379,24 +412,11 @@ export function RevealScreen() {
               duration: 0.3
             }} className="overflow-hidden">
                         <div className="pt-4 mt-4 border-t border-white/10">
-                          {/* Contenu des insights financiers */}
+                          {/* Contenu de la révélation */}
                           {section.id === 'insights' && <div className="space-y-4">
-                              {insights.length > 0 ? insights.map((insight, index) => (
-                                <div key={index} className="bg-black/20 p-4 rounded-lg">
-                                  <h4 className="font-medium mb-2">{insight.message}</h4>
-                                  {insight.bias && <p className="text-sm text-gray-400 mb-1">Biais: {insight.bias}</p>}
-                                  {insight.fact && <p className="text-sm text-gray-400 mb-1">Fait: {insight.fact}</p>}
-                                  {insight.quote && <p className="text-sm text-gray-400 mb-1">Quote: {insight.quote}</p>}
-                                  {insight.recommendation && <p className="text-sm text-green-400 mb-1">Recommendation: {insight.recommendation}</p>}
-                                  {insight.trivia && <p className="text-sm text-blue-400 mb-1">Trivia: {insight.trivia}</p>}
-                                </div>
-                              )) : <div className="text-center py-6 text-gray-400">
-                                  <p>Aucun insight financier disponible</p>
-                                  <p className="text-sm mt-1">
-                                    Ajoutez plus de données financières pour
-                                    obtenir des insights personnalisés
-                                  </p>
-                                </div>}
+                              <p className="text-lg bg-black/20 p-4 rounded-lg">
+                                {revelation || 'Aucune révélation pour le moment.'}
+                              </p>
                             </div>}
                           {/* Contenu de la santé financière */}
                           {section.id === 'health' && <div className="space-y-4">

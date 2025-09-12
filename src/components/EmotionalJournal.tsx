@@ -8,8 +8,19 @@ import { toast, Toaster } from 'react-hot-toast';
 import { format, parseISO, subDays, isAfter, isBefore, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { JournalEntry } from '@/types/domain';
-
+// Type for journal entry
+interface JournalEntry {
+  id: string;
+  date: string;
+  mood: number;
+  tags: string[];
+  text: string;
+  financialContext?: {
+    income?: number;
+    expenses?: number;
+    balance?: number;
+  };
+}
 export function EmotionalJournal() {
   const {
     theme,

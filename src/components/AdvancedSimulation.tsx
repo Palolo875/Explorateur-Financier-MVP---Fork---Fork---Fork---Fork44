@@ -10,8 +10,28 @@ import { SimulationParams, SimulationResult } from '../types/finance';
 import { toast, Toaster } from 'react-hot-toast';
 import { toPng } from 'html-to-image';
 import { fetchInflationData, fetchInterestRates } from '../services/economy';
-import { GoalSimulation, ScenarioComparison } from '@/types/domain';
-
+// Advanced simulation types
+interface GoalSimulation {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  monthlyContribution: number;
+  interestRate: number;
+  inflationRate: number;
+  years: number;
+  results: {
+    years: number[];
+    amounts: number[];
+    adjustedForInflation: number[];
+  };
+}
+interface ScenarioComparison {
+  name: string;
+  description: string;
+  params: SimulationParams;
+  results: SimulationResult;
+}
 export function AdvancedSimulation() {
   const navigate = useNavigate();
   const {

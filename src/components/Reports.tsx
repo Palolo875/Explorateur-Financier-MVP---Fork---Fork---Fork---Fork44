@@ -7,7 +7,30 @@ import { GlassCard } from './ui/GlassCard';
 import { toast, Toaster } from 'react-hot-toast';
 import { format, subDays } from 'date-fns';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FinancialInsight, SimulationResults, FinancialReport } from '@/types/domain';
+// Types
+interface FinancialInsight {
+  id: string;
+  title: string;
+  description: string;
+  category: 'income' | 'expense' | 'saving' | 'debt' | 'general';
+  impact: 'positive' | 'negative' | 'neutral';
+  priority: 'high' | 'medium' | 'low';
+}
+interface SimulationResults {
+  netWorth: number[];
+  income: number[];
+  expenses: number[];
+  savings: number[];
+}
+interface FinancialReport {
+  id: string;
+  title: string;
+  date: string;
+  insights: FinancialInsight[];
+  summary: string;
+  recommendations: string[];
+  simulationResults: SimulationResults;
+}
 // Utility functions
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'dd/MM/yyyy');

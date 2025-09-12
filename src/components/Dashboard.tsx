@@ -18,8 +18,15 @@ import { toast, Toaster } from 'react-hot-toast';
 import CountUp from 'react-countup';
 import { fetchTransactions } from '../services/banking';
 import CsvImporter from './data/CsvImporter';
-import { DashboardNotification } from '@/types/domain';
-
+// Type for dashboard notification
+interface DashboardNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'danger';
+  date: Date;
+  read: boolean;
+}
 export function Dashboard() {
   const navigate = useNavigate();
   const {
