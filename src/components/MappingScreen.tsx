@@ -11,7 +11,6 @@ import { GlassCard } from './ui/GlassCard';
 import { DataImportModal } from './data/DataImportModal';
 import { RealTimeVisualization } from './data/RealTimeVisualization';
 import { categorizeTransaction, improveModelWithFeedback } from '../utils/aiCategorization';
-import { CategoryOption } from '@/types/domain';
 // Import des sons pour les micro-interactions
 // Note: Dans une implémentation réelle, ces URLs devraient pointer vers des fichiers hébergés
 const SOUNDS = {
@@ -23,6 +22,12 @@ const SOUNDS = {
   delete: 'https://assets.mixkit.co/active_storage/sfx/650/650-preview.mp3',
   categorize: 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3'
 };
+// Types for financial items
+interface CategoryOption {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+}
 // Frequency options for financial items
 const frequencyOptions = [{
   value: 'monthly',

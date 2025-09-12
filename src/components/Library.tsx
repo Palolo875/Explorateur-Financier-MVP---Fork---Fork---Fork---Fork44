@@ -5,8 +5,20 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, BookOpenIcon, DownloadIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, FileTextIcon, BookIcon, NewspaperIcon, FileIcon, ExternalLinkIcon, BarChartIcon, TrendingUpIcon, GlobeIcon, CreditCardIcon, HomeIcon, PiggyBankIcon, ShieldIcon } from 'lucide-react';
 import { fetchEducationContent, EducationResource } from '../services/education';
-import { Resource } from '@/types/domain';
-
+interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  type: 'article' | 'guide' | 'rapport' | 'outil';
+  source: string;
+  url: string;
+  image?: string;
+  date: string;
+  featured?: boolean;
+  tags: string[];
+  rating?: number; // 1-5
+}
 export function Library() {
   const navigate = useNavigate();
   const {

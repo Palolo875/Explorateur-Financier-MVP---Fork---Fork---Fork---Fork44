@@ -1,5 +1,11 @@
 import { DEFAULT_LOCALE, USE_EDUCATION_MODULE } from '@/config';
-import { MicroLesson } from '@/types/domain';
+
+export interface MicroLesson {
+  id: string;
+  locale: 'en' | 'fr';
+  title: string;
+  content: string;
+}
 
 async function fetchRemoteMicroLessons(): Promise<MicroLesson[]> {
   // Placeholder open resource: we will attempt to fetch from a public JSON as demo.

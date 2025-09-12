@@ -5,8 +5,21 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { SearchIcon, GraduationCapIcon, BookOpenIcon, ClockIcon, StarIcon, FilterIcon, ChevronRightIcon, CheckCircleIcon, PlayCircleIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
 import { fetchEducationContent, EducationResource } from '../services/education';
-import { Lesson } from '@/types/domain';
-
+interface Lesson {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  level: 'débutant' | 'intermédiaire' | 'avancé';
+  duration: number; // minutes
+  image: string;
+  url: string;
+  completed?: boolean;
+  progress?: number; // 0-100
+  lastUpdated: string;
+  source: string;
+  rating: number; // 1-5
+}
 export function Lessons() {
   const navigate = useNavigate();
   const {
