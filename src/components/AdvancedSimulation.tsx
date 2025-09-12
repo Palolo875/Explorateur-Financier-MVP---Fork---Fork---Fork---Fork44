@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useFinance } from '../context/FinanceContext';
 import { LineChartIcon, SaveIcon, PlusIcon, TrashIcon, RefreshCwIcon, BarChart3Icon, CopyIcon, CheckIcon, AlertCircleIcon, InfoIcon, CalendarIcon, ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, TrendingDownIcon, PiggyBankIcon, HomeIcon, GraduationCapIcon, HeartIcon, BriefcaseIcon, ShareIcon, LockIcon, UnlockIcon, ChevronRightIcon, SettingsIcon, TargetIcon, CheckCircleIcon, BellRingIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ReferenceLine } from 'recharts';
-import { SimulationParams, SimulationResult } from '../types/finance';
+import { SaveIcon, RefreshCwIcon, AlertCircleIcon, DownloadIcon, TrendingUpIcon, TrendingDownIcon, CreditCardIcon, InfoIcon, CheckIcon, XIcon, HomeIcon, BriefcaseIcon, CalendarIcon } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { toPng } from 'html-to-image';
 import { fetchInflationData, fetchInterestRates } from '../services/economy';
