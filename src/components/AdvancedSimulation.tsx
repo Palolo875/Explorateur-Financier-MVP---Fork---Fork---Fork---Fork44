@@ -1376,7 +1376,7 @@ export function AdvancedSimulation() {
                             </span>
                           </td>
                           <td className="py-2 text-right">
-                            {scenario.name === 'Situation actuelle' ? <span className="text-gray-400">-</span> : <span className={`px-2 py-0.5 rounded-full text-xs ${diffFromBase > 0 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                            {scenario.name === 'Situation actuelle' ? <span className="text-gray-400">-</span> : <span className={`px-2 py-0.5 rounded-full text-xs ${diffFromBase > 0 ? 'bg-green-500/20 text-green-300' : \'bg-red-500/20 text-red-300'}`}>
                                 {diffFromBase > 0 ? '+' : ''}
                                 {diffPercent}%
                               </span>}
